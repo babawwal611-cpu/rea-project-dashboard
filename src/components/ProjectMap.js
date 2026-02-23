@@ -3,7 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import * as turf from '@turf/turf';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-mapboxgl.accessToken = 'pk.eyJ1Ijoia2luZ2F3d2FsIiwiYSI6ImNtbHdweHQ3cTBqOHozZnFxdTVibjBlOHkifQ.8P85EvrZrBem2eCaxI7HkQ';
+mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
 const YEARS    = ['2019', '2020', '2021', '2022', '2023', '2024', '2025'];
 const STATUSES = ['COMPLETED', 'ONGOING', 'YET TO MOBILIZE'];
