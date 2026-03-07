@@ -9,15 +9,22 @@ mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 const REA_GREEN   = '#00843D';
 const REA_DARK    = '#005C2B';
 const ACCENT_GOLD = '#F5A623';
-const GLASS_BG    = 'rgba(255,255,255,0.92)';
+const DARK_BG     = '#0a1f0a'; // Dark green background
+const GLASS_BG    = 'rgba(10, 31, 10, 0.92)'; // Dark green glass
 const GLASS_BLUR  = 'blur(12px)';
-const SHADOW      = '0 8px 32px rgba(0,0,0,0.18)';
+const SHADOW      = '0 8px 32px rgba(0,0,0,0.4)';
 
-/* ── Constants ─────────────────────────────────────────────────────────────── */
+/* ── Nigeria Bounds ───────────────────────────────────────────────────────── */
+// Nigeria bounding box: [west, south, east, north]
+const NIGERIA_BOUNDS = [
+  [2.6684, 4.2774],  // Southwest
+  [14.6770, 13.8920] // Northeast
+];
+
+/* ── Constants ───────────────────────────────────────────────────────────── */
 const VIEWS = [
   { id: 'coverage',    label: 'COVERAGE',    icon: '◉' },
   { id: 'performance', label: 'PERFORMANCE', icon: '◈' },
-  { id: 'technology',  label: 'TECHNOLOGY',  icon: '◆' },
 ];
 
 const YEARS    = ['2019','2020','2021','2022','2023','2024','2025'];
@@ -35,6 +42,168 @@ const STATUS_COLORS = {
   'COMPLETED':       '#00C48C',
   'ONGOING':         '#FFB800',
   'YET TO MOBILIZE': '#FF4757',
+  '':                '#2F3542',
+};
+
+const pct = (n, t) => t ? Math.round((n / t) * 100) : 0;
+
+/* ── Inject Google Font ──────────────────────────────────────────────────── */
+const FontLink = () => (
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+);
+
+/* ── SVG Pie ─────────────────────────────────────────────────────────────── */
+const PieChart = ({ data, size = 100 }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  if (!total) return null;
+  const r = size / 2 - 6, cx = size / 2, cy = size / 2;
+  let a = -Math.PI / 2;
+  const slices = data.filter(d => d.value > 0).map(d => {
+    const sweep = (d.value / total) * 2 * Math.PI;
+    const x1 = cx + r * Math.cos(a), y1 = cy + r * Math.sin(a);
+    a += sweep;
+    const x2 = cx + r * Math.cos(a), y2 = cy + r * Math.sin(a);
+    return { path: `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${sweep > Math.PI ? 1 : 0},1 ${x2},${y2} Z`, color: d.color };
+  });
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>
+      {slices.map((s, i) => <path key={i} d={s.path} fill={s.color} stroke="#fff" strokeWidth={2} />)}
+    </svg>
+  );
+};
+
+/* ── StatCard ───────────────────────────────────────────────────────────── */
+const StatCard = ({ label, value, color, sub }) => (
+  <div style={{
+    flex: 1, borderRadius: 10, padding: '12px 10px', textAlign: 'center',
+    background: `linear-gradient(135deg, ${color}18, ${color}08)`,
+    border: `1px solid ${color}30`,
+    position: 'relative', overflow: 'hidden',
+  }}>
+    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: color, borderRadius: '10px 10px 0 0' }} />
+    <div style={{ fontSize: 26, fontWeight: 800, color, fontFamily: "'Barlow Condensed', sans-serif", lineHeight: 1.1 }}>{value}</div>
+    <div style={{ fontSize: 10, color: '#aaa', marginTop: 3, fontFamily: "'Barlow', sans-serif", fontWeight: 500, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
+    {sub && <div style={{ fontSize: 10, color, marginTop: 2, fontWeight: 600 }}>{sub}</div>}
+  </div>
+);
+
+/* ── Chip ─────────────────────────────────────────────────────────────────── */
+const Chip = ({ label, active, color, onClick }) => (
+  <button onClick={onClick} style={{
+    padding: '5px 11px', borderRadius: 6, fontSize: 10, fontWeight: 700,
+    cursor: 'pointer', border: `1.5px solid ${active ? color : '#333'}`,
+    background: active ? color : 'transparent',
+    color: active ? '#fff' : '#aaa',
+    transition: 'all 0.15s', whiteSpace: 'nowrap',
+    fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  }}>
+    {label}
+  </button>
+);
+
+/* ── Main ─────────────────────────────────────────────────────────────────── */
+const ProjectMap = () => {
+  const mapContainer = useRef(null);
+  const map          = useRef(null);
+
+  const [view,           setView]           = useState('performance');
+  const [panelOpen,      setPanelOpen]      = useState(false);
+  const [selectedYears,  setSelectedYears]  = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState([]);
+  const [selectedTypes,  setSelectedTypes]  = useState([]);
+  const [activeState,    setActiveState]    = useState(null);
+  const [stateData,      setStateData]      = useState(null);
+  const [pointCount,     setPointCount]     = useState(null);
+  const [mapReady,       setMapReady]       = useState(false);
+  const [sidePanelIn,    setSidePanelIn]    = useState(false);
+
+  const applyFilter = useCallback((years, statuses, types, stateName) => {
+    if (!map.current || !map.current.getLayer('clusters')) return;
+    
+    // Build filter for individual points
+    const conds = [];
+    if (stateName)       conds.push(['==', ['get', 'state'], stateName]);
+    if (years.length)    conds.push(['in', ['get', 'year'],   ['literal', years]]);
+    if (statuses.length) conds.push(['in', ['get', 'status'], ['literal', statuses]]);
+    if (types.length)    conds.push(['in', ['get', 'type'],   ['literal', types]]);
+    
+    const filter = conds.length === 0 ? null : conds.length === 1 ? conds[0] : ['all', ...conds];
+    
+    // Apply to unclustered points
+    map.current.setFilter('unclustered-point', filter);
+    
+    // Update point count (query unclustered points)
+    setTimeout(() => {
+      const v = map.current.queryRenderedFeatures({ layers: ['unclustered-point'] });
+      setPointCount(v.length);
+    }, 300);
+  }, []);
+
+  const switchView = useCallback((newView) => {
+    if (!map.current || !mapReady) return;
+    setView(newView);
+    setActiveState(null); setStateData(null); setSidePanelIn(false);
+    const isCov = newView === 'coverage';
+    
+    // Toggle layer visibility
+    map.current.setLayoutProperty('clusters',              'visibility', isCov ? 'none' : 'visible');
+    map.current.setLayoutProperty('cluster-count',       'visibility', isCov ? 'none' : 'visible');
+    map.current.setLayoutProperty('unclustered-point',     'visibility', isCov ? 'none' : 'visible');
+    map.current.setLayoutProperty('heatmap',               'visibility', isCov ? 'none' : 'visible');
+    map.current.setLayoutProperty('state-choropleth',      'visibility', isCov ? 'visible' : 'none');
+    map.current.setPaintProperty('state-fill', 'fill-opacity', isCov ? 0 : 0.15);
+    
+    // Update cluster colors based on status for performance view
+    if (newView === 'performance') {
+      map.current.setPaintProperty('unclustered-point', 'circle-color', [
+        'match', ['get', 'status'],
+        'COMPLETED', STATUS_COLORS['COMPLETED'], 
+        'ONGOING', STATUS_COLORS['ONGOING'], 
+        'YET TO MOBILIZE', STATUS_COLORS['YET TO MOBILIZE'], 
+        STATUS_COLORS['']
+      ]);
+    }
+  }, [mapReady]);
+
+  const toggleYear   = (y) => { const n = selectedYears.includes(y)   ? selectedYears.filter(v=>v!==y)   : [...selectedYears,y];   setSelectedYears(n);   applyFilter(n, selectedStatus, selectedTypes, activeState); };
+  const toggleStatus = (s) => { const n = selectedStatus.includes(s)  ? selectedStatus.filter(v=>v!==s)  : [...selectedStatus,s];  setSelectedStatus(n);  applyFilter(selectedYears, n, selectedTypes, activeState); };
+  const toggleType   = (t) => { const n = selectedTypes.includes(t)   ? selectedTypes.filter(v=>v!==t)   : [...selectedTypes,t];   setSelectedTypes(n);   applyFilter(selectedYears, selectedStatus, n, activeState); };
+
+  const clearAll = () => {
+    setSelectedYears([]); setSelectedStatus([]); setSelectedTypes([]);
+    setActiveState(null); setStateData(null); setSidePanelIn(false);
+    applyFilter([], [], [], null);
+    map.current?.flyTo({ center: [8.6753, 9.0820], zoom: 5.5 });
+  };
+
+  const activeFilterCount = selectedYears.length + selectedStatus.length + selectedTypes.length;
+
+  useEffect(() => {
+    if (map.current) return;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/dark-v11', // Dark base map
+      center: [8.6753, 9.0820], 
+      zoom: 5.5,
+      maxBounds: NIGERIA_BOUNDS, // Restrict to Nigeria only
+      minZoom: 5,
+      maxZoom: 14,
+      projection: 'mercator'
+    });
+    
+    map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
+
+    map.current.on('load', () => {
+      // Set dark green background
+      map.current.setPaintProperty('background', 'background-color', DARK_BG);
+
+      // Add states source
+      map.current.addSource  'YET TO MOBILIZE': '#FF4757',
   '':                '#2F3542',
 };
 
