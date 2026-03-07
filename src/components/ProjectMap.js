@@ -259,9 +259,9 @@ const ProjectMap = () => {
         clusterRadius: 50,  // Radius of each cluster
         clusterProperties: {
           // Aggregate status counts for cluster coloring
-          completed: ['+', ['case', ['==', ['get', 'status'], 'COMPLETED'], 1, 0]],
-          ongoing: ['+', ['case', ['==', ['get', 'status'], 'ONGOING'], 1, 0]],
-          yet_to_mobilize: ['+', ['case', ['==', ['get', 'status'], 'YET TO MOBILIZE'], 1, 0]],
+          'completed': ['+', ['case', ['==', ['get', 'status'], 'COMPLETED'], 1, 0]],
+          'ongoing': ['+', ['case', ['==', ['get', 'status'], 'ONGOING'], 1, 0]],
+          'yet_to_mobilize': ['+', ['case', ['==', ['get', 'status'], 'YET TO MOBILIZE'], 1, 0]]
         }
       });
 
@@ -331,18 +331,18 @@ const ProjectMap = () => {
             'case',
             ['>', ['get', 'completed'], ['get', 'ongoing']],
             ['>', ['get', 'completed'], ['get', 'yet_to_mobilize']],
-            STATUS_COLORS['COMPLETED'], // Mostly completed
+            STATUS_COLORS['COMPLETED'],
             ['>', ['get', 'ongoing'], ['get', 'yet_to_mobilize']],
-            STATUS_COLORS['ONGOING'], // Mostly ongoing
-            STATUS_COLORS['YET TO MOBILIZE'] // Mostly yet to mobilize
+            STATUS_COLORS['ONGOING'],
+            STATUS_COLORS['YET TO MOBILIZE']
           ],
           'circle-radius': [
             'step',
             ['get', 'point_count'],
-            20,    // < 10 points
-            10, 25, // 10-50 points
-            50, 30, // 50-100 points
-            100, 35, // 100+ points
+            20,
+            10, 25,
+            50, 30,
+            100, 35,
             200, 40
           ],
           'circle-blur': 0.15,
@@ -592,7 +592,7 @@ const ProjectMap = () => {
         }}>
           {VIEWS.map(v => (
             <button key={v.id} onClick={() => switchView(v.id)} style={{
-              padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
+              padding: '8px 18px', borderRadius: 8, cursor: 'pointer',
               fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
               fontSize: 12, letterSpacing: 1, textTransform: 'uppercase',
               background: view === v.id
@@ -621,7 +621,6 @@ const ProjectMap = () => {
             backdropFilter: GLASS_BLUR, boxShadow: SHADOW, display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 17, color: panelOpen ? '#fff' : '#4ade80',
             position: 'relative',
-            border: '1px solid rgba(74, 222, 128, 0.2)',
           }}>
             ⚙
             {activeFilterCount > 0 && (
