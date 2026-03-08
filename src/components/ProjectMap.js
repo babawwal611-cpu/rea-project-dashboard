@@ -158,6 +158,45 @@ const ProjectMap = () => {
 
   const theme = isDark ? THEMES.dark : THEMES.light;
 
+  /* ── Recalculate choropleth live from filtered source features ── */
+  const recalcChoropleth = useCallback((years, statuses, types, stateName) => {
+    if (!map.current || !map.current.getSource('projects')) return;
+
+    // querySourceFeatures pulls ALL tiles in source regardless of zoom/viewport
+    const allFeatures = map.current.querySourceFeatures('projects');
+
+    // Count per state after applying the same filters in JS
+    const counts = {};
+    allFeatures.forEach(f => {
+      const p = f.properties;
+      if (stateName    && p.state  !== stateName)       return;
+      if (years.length    && !years.includes(p.year))   return;
+      if (statuses.length && !statuses.includes(p.status)) return;
+      if (types.length    && !types.includes(p.type))   return;
+      counts[p.state] = (counts[p.state] || 0) + 1;
+    });
+
+    const maxCount = Math.max(...Object.values(counts), 1);
+
+    // Build a match expression: ['match', stateExpr, state1, count1, ..., 0]
+    const matchExpr = ['match', ['upcase', ['get', 'shapeName']]];
+    Object.entries(counts).forEach(([state, count]) => {
+      matchExpr.push(state, count);
+    });
+    matchExpr.push(0); // default for states with no matches
+
+    if (map.current.getLayer('state-choropleth')) {
+      map.current.setPaintProperty('state-choropleth', 'fill-color', [
+        'interpolate', ['linear'], matchExpr,
+        0,            '#c8e6c9',
+        maxCount*0.2, '#66bb6a',
+        maxCount*0.4, '#2e7d32',
+        maxCount*0.7, '#1b5e20',
+        maxCount,     '#0a3d17',
+      ]);
+    }
+  }, []);
+
   /* ── Filter ── */
   const applyFilter = useCallback((years, statuses, types, stateName) => {
     if (!map.current || !map.current.getLayer('project-points')) return;
@@ -172,8 +211,13 @@ const ProjectMap = () => {
     setTimeout(() => {
       if (!map.current) return;
       setPointCount(map.current.queryRenderedFeatures({ layers: ['project-points'] }).length);
-    }, 300);
-  }, []);
+      // In coverage view, repaint choropleth to reflect filtered counts
+      setView(v => {
+        if (v === 'coverage') recalcChoropleth(years, statuses, types, stateName);
+        return v;
+      });
+    }, 350);
+  }, [recalcChoropleth]);
 
   /* ── Coverage fade: dim all states except selected ── */
   const applyCoverageFade = useCallback((stateName) => {
@@ -239,37 +283,25 @@ const ProjectMap = () => {
       paint: { 'line-color': ACCENT_GOLD, 'line-width': 2.5, 'line-opacity': 1 },
       filter: ['==', 'shapeName', ''],
     });
-    // ── Performance points: zoom-responsive to reduce clutter ──
+    // ── Points layer — always loaded (never visibility:none) so querySourceFeatures works ──
     map.current.addLayer({
       id: 'project-points', type: 'circle', source: 'projects',
       paint: {
-        // Small at country level, grows when zoomed in
         'circle-radius': ['interpolate', ['linear'], ['zoom'],
-          4, 1.8,
-          6, 3.0,
-          8, 4.5,
-          11, 7.0,
+          4, 1.8, 6, 3.0, 8, 4.5, 11, 7.0,
         ],
         'circle-color': ['match', ['get', 'status'],
           'COMPLETED','#00C48C', 'ONGOING','#FFB800', 'YET TO MOBILIZE','#FF4757', '#2F3542'],
-        // Stroke only appears when zoomed enough to see individual points
         'circle-stroke-width': ['interpolate', ['linear'], ['zoom'],
-          4, 0,
-          7, 0.6,
-          10, 1.4,
+          4, 0, 7, 0.6, 10, 1.4,
         ],
         'circle-stroke-color': pointStrokeColor,
-        // Fade in with zoom — less visual noise at country level
+        'circle-stroke-opacity': 1,
         'circle-opacity': ['interpolate', ['linear'], ['zoom'],
-          4, 0.45,
-          6, 0.68,
-          9, 0.88,
+          4, 0.45, 6, 0.68, 9, 0.88,
         ],
-        // Soft blur at country level turns individual dots into a density haze
         'circle-blur': ['interpolate', ['linear'], ['zoom'],
-          4, 0.6,
-          7, 0.2,
-          10, 0,
+          4, 0.6, 7, 0.2, 10, 0,
         ],
       },
     });
@@ -286,12 +318,22 @@ const ProjectMap = () => {
     }
 
     const isCov = newView === 'coverage';
-    if (map.current.getLayer('project-points'))
-      map.current.setLayoutProperty('project-points', 'visibility', isCov ? 'none' : 'visible');
+    if (map.current.getLayer('project-points')) {
+      // In coverage view keep layer loaded (for querySourceFeatures) but invisible
+      map.current.setPaintProperty('project-points', 'circle-opacity',        isCov ? 0 : ['interpolate',['linear'],['zoom'],4,0.45,6,0.68,9,0.88]);
+      map.current.setPaintProperty('project-points', 'circle-stroke-opacity', isCov ? 0 : 1);
+    }
     if (map.current.getLayer('state-choropleth'))
       map.current.setLayoutProperty('state-choropleth', 'visibility', isCov ? 'visible' : 'none');
     if (map.current.getLayer('state-fill'))
       map.current.setPaintProperty('state-fill', 'fill-opacity', isCov ? 0 : 0.06);
+    // On entering coverage, recalc choropleth with any active filters
+    if (isCov) {
+      setSelectedYears(y => { setSelectedStatus(s => { setSelectedTypes(t => {
+        recalcChoropleth(y, s, t, null);
+        return t; }); return s; }); return y;
+      });
+    }
 
     if (newView === 'performance' && map.current.getLayer('project-points')) {
       map.current.setPaintProperty('project-points', 'circle-color', [
@@ -309,7 +351,7 @@ const ProjectMap = () => {
         '#778CA3',
       ]);
     }
-  }, [mapReady, applyCoverageFade]);
+  }, [mapReady, applyCoverageFade, recalcChoropleth]);
 
   /* ── Dark/light toggle ── */
   const toggleTheme = useCallback(() => {
@@ -324,9 +366,15 @@ const ProjectMap = () => {
       // Restore current view
       setView(v => {
         const isCov = v === 'coverage';
-        map.current.setLayoutProperty('project-points',   'visibility', isCov ? 'none' : 'visible');
+        map.current.setPaintProperty('project-points', 'circle-opacity',        isCov ? 0 : ['interpolate',['linear'],['zoom'],4,0.45,6,0.68,9,0.88]);
+        map.current.setPaintProperty('project-points', 'circle-stroke-opacity', isCov ? 0 : 1);
         map.current.setLayoutProperty('state-choropleth', 'visibility', isCov ? 'visible' : 'none');
         map.current.setPaintProperty('state-fill', 'fill-opacity', isCov ? 0 : 0.06);
+        if (v === 'coverage') {
+          setSelectedYears(y => { setSelectedStatus(s => { setSelectedTypes(t => {
+            recalcChoropleth(y, s, t, null); return t; }); return s; }); return y;
+          });
+        }
         if (v === 'technology') {
           map.current.setPaintProperty('project-points', 'circle-color', [
             'case',
@@ -341,7 +389,7 @@ const ProjectMap = () => {
       });
       setMapReady(true);
     });
-  }, [isDark, addLayers]);
+  }, [isDark, addLayers, recalcChoropleth]);
 
   const toggleYear   = (y) => { const n = selectedYears.includes(y)   ? selectedYears.filter(v=>v!==y)   : [...selectedYears,y];   setSelectedYears(n);   applyFilter(n, selectedStatus, selectedTypes, activeState); };
   const toggleStatus = (s) => { const n = selectedStatus.includes(s)  ? selectedStatus.filter(v=>v!==s)  : [...selectedStatus,s];  setSelectedStatus(n);  applyFilter(selectedYears, n, selectedTypes, activeState); };
