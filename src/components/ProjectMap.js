@@ -90,7 +90,25 @@ const SunIcon = () => (
     <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
   </svg>
 );
-
+/* ?? SVG Pie ???????????????????????????????????????????????????????????????? */
+const PieChart = ({ data, size = 100 }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  if (!total) return null;
+  const r = size / 2 - 6, cx = size / 2, cy = size / 2;
+  let a = -Math.PI / 2;
+  const slices = data.filter(d => d.value > 0).map(d => {
+    const sweep = (d.value / total) * 2 * Math.PI;
+    const x1 = cx + r * Math.cos(a), y1 = cy + r * Math.sin(a);
+    a += sweep;
+    const x2 = cx + r * Math.cos(a), y2 = cy + r * Math.sin(a);
+    return { path: `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${sweep > Math.PI ? 1 : 0},1 ${x2},${y2} Z`, color: d.color };
+  });
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>
+      {slices.map((s, i) => <path key={i} d={s.path} fill={s.color} stroke="#fff" strokeWidth={2} />)}
+    </svg>
+  );
+};
 /* ── StatCard ─────────────────────────────────────────────────────────────── */
 const StatCard = ({ label, value, color, theme }) => (
   <div style={{
