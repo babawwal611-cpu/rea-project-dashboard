@@ -26,6 +26,7 @@ const NIGERIA_BOUNDS = [
 const VIEWS = [
   { id: 'coverage',    label: 'COVERAGE',    icon: '◉' },
   { id: 'performance', label: 'PERFORMANCE', icon: '◈' },
+  { id: 'technology',  label: 'TECHNOLOGY',  icon: '◆' },
 ];
 
 const YEARS    = ['2019','2020','2021','2022','2023','2024','2025'];
@@ -46,6 +47,8 @@ const STATUS_COLORS = {
   '':                '#2F3542',
 };
 
+const pct = (n, t) => t ? Math.round((n / t) * 100) : 0;
+
 /* ── Inject Google Font ──────────────────────────────────────────────────── */
 const FontLink = () => (
   <link
@@ -53,6 +56,26 @@ const FontLink = () => (
     rel="stylesheet"
   />
 );
+
+/* ── SVG Pie Chart ───────────────────────────────────────────────────────── */
+const PieChart = ({ data, size = 100 }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  if (!total) return null;
+  const r = size / 2 - 6, cx = size / 2, cy = size / 2;
+  let a = -Math.PI / 2;
+  const slices = data.filter(d => d.value > 0).map(d => {
+    const sweep = (d.value / total) * 2 * Math.PI;
+    const x1 = cx + r * Math.cos(a), y1 = cy + r * Math.sin(a);
+    a += sweep;
+    const x2 = cx + r * Math.cos(a), y2 = cy + r * Math.sin(a);
+    return { path: `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${sweep > Math.PI ? 1 : 0},1 ${x2},${y2} Z`, color: d.color };
+  });
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}>
+      {slices.map((s, i) => <path key={i} d={s.path} fill={s.color} stroke="#fff" strokeWidth={2} />)}
+    </svg>
+  );
+};
 
 /* ── StatCard ───────────────────────────────────────────────────────────── */
 const StatCard = ({ label, value, color, sub, isLight }) => (
@@ -90,6 +113,7 @@ const Chip = ({ label, active, color, onClick, isLight }) => (
 const ProjectMap = () => {
   const mapContainer = useRef(null);
   const map          = useRef(null);
+  const listenersRef = useRef([]);
 
   const [view,           setView]           = useState('performance');
   const [panelOpen,      setPanelOpen]      = useState(false);
@@ -104,21 +128,15 @@ const ProjectMap = () => {
   const [sidePanelIn,    setSidePanelIn]    = useState(false);
   const [isLightMode,    setIsLightMode]    = useState(false);
 
-  // Use refs to avoid circular dependencies in useCallback
-  const viewRef = useRef(view);
-  const isLightModeRef = useRef(isLightMode);
-  const selectedYearsRef = useRef(selectedYears);
-  const selectedStatusRef = useRef(selectedStatus);
-  const selectedTypesRef = useRef(selectedTypes);
-  const activeStateRef = useRef(activeState);
+  // Use refs to track current state for event handlers
+  const stateRef = useRef({
+    selectedYears, selectedStatus, selectedTypes, activeState, isLightMode, view
+  });
 
   // Update refs when state changes
-  useEffect(() => { viewRef.current = view; }, [view]);
-  useEffect(() => { isLightModeRef.current = isLightMode; }, [isLightMode]);
-  useEffect(() => { selectedYearsRef.current = selectedYears; }, [selectedYears]);
-  useEffect(() => { selectedStatusRef.current = selectedStatus; }, [selectedStatus]);
-  useEffect(() => { selectedTypesRef.current = selectedTypes; }, [selectedTypes]);
-  useEffect(() => { activeStateRef.current = activeState; }, [activeState]);
+  useEffect(() => {
+    stateRef.current = { selectedYears, selectedStatus, selectedTypes, activeState, isLightMode, view };
+  }, [selectedYears, selectedStatus, selectedTypes, activeState, isLightMode, view]);
 
   // Calculate total projects from GeoJSON data
   const calculateTotalProjects = useCallback((geojsonData) => {
@@ -126,8 +144,9 @@ const ProjectMap = () => {
     return geojsonData.features.length;
   }, []);
 
+  // Apply filters to the map layers
   const applyFilter = useCallback((years, statuses, types, stateName) => {
-    if (!map.current || !map.current.getLayer('clusters')) return;
+    if (!map.current || !map.current.getLayer('unclustered-point')) return;
     
     const conds = [];
     if (stateName)       conds.push(['==', ['get', 'state'], stateName]);
@@ -139,8 +158,9 @@ const ProjectMap = () => {
     
     map.current.setFilter('unclustered-point', filter);
     
-    // Update point count
+    // Update point count after filter animation
     setTimeout(() => {
+      if (!map.current) return;
       const visiblePoints = map.current.queryRenderedFeatures({ layers: ['unclustered-point'] });
       const clusters = map.current.queryRenderedFeatures({ layers: ['clusters'] });
       
@@ -153,29 +173,55 @@ const ProjectMap = () => {
     }, 300);
   }, []);
 
-  // Attach event listeners - defined early to avoid circular deps
+  // Clear all event listeners
+  const clearListeners = useCallback(() => {
+    if (!map.current) return;
+    listenersRef.current.forEach(({ event, layer, fn }) => {
+      if (layer) {
+        map.current.off(event, layer, fn);
+      } else {
+        map.current.off(event, fn);
+      }
+    });
+    listenersRef.current = [];
+  }, []);
+
+  // Add event listener and track it for cleanup
+  const addListener = useCallback((event, layer, fn) => {
+    if (!map.current) return;
+    if (typeof layer === 'function') {
+      fn = layer;
+      layer = null;
+    }
+    if (layer) {
+      map.current.on(event, layer, fn);
+    } else {
+      map.current.on(event, fn);
+    }
+    listenersRef.current.push({ event, layer, fn });
+  }, []);
+
+  // Attach all event listeners
   const attachEventListeners = useCallback(() => {
     if (!map.current) return;
+    
+    clearListeners();
 
-    const currentView = viewRef.current;
-    const currentIsLight = isLightModeRef.current;
-    const currentSelectedYears = selectedYearsRef.current;
-    const currentSelectedStatus = selectedStatusRef.current;
-    const currentSelectedTypes = selectedTypesRef.current;
+    const currentState = stateRef.current;
 
-    // State hover
-    ['state-fill','state-choropleth'].forEach(l => {
-      map.current.on('mousemove', l, (e) => {
+    // State hover effects
+    ['state-fill', 'state-choropleth'].forEach(layer => {
+      addListener('mousemove', layer, (e) => {
         map.current.setFilter('state-hover', ['==', 'shapeName', e.features[0].properties.shapeName]);
         map.current.getCanvas().style.cursor = 'pointer';
       });
-      map.current.on('mouseleave', l, () => {
+      addListener('mouseleave', layer, () => {
         map.current.setFilter('state-hover', ['==', 'shapeName', '']);
         map.current.getCanvas().style.cursor = '';
       });
     });
 
-    // State click
+    // State click handler
     const onStateClick = (e) => {
       const props = e.features[0].properties;
       const stateName = props.shapeName.toUpperCase();
@@ -184,28 +230,38 @@ const ProjectMap = () => {
       map.current.setFilter('state-border-active', ['==', 'shapeName', props.shapeName]);
       map.current.fitBounds(turf.bbox(e.features[0]), { padding: 60 });
       setTimeout(() => setSidePanelIn(true), 100);
-      applyFilter(currentSelectedYears, currentSelectedStatus, currentSelectedTypes, stateName);
+      applyFilter(
+        stateRef.current.selectedYears,
+        stateRef.current.selectedStatus,
+        stateRef.current.selectedTypes,
+        stateName
+      );
     };
     
-    map.current.on('click', 'state-fill', onStateClick);
-    map.current.on('click', 'state-choropleth', onStateClick);
+    addListener('click', 'state-fill', onStateClick);
+    addListener('click', 'state-choropleth', onStateClick);
 
-    // Empty space click
-    map.current.on('click', (e) => {
+    // Empty space click - clear selection
+    addListener('click', (e) => {
       const hits = map.current.queryRenderedFeatures(e.point, { 
-        layers: ['state-fill','state-choropleth','clusters','unclustered-point'] 
+        layers: ['state-fill', 'state-choropleth', 'clusters', 'unclustered-point'] 
       });
       if (!hits.length) {
         setActiveState(null);
         setStateData(null);
         setSidePanelIn(false);
         map.current.setFilter('state-border-active', ['==', 'shapeName', '']);
-        applyFilter(currentSelectedYears, currentSelectedStatus, currentSelectedTypes, null);
+        applyFilter(
+          stateRef.current.selectedYears,
+          stateRef.current.selectedStatus,
+          stateRef.current.selectedTypes,
+          null
+        );
       }
     });
 
-    // Cluster click
-    map.current.on('click', 'clusters', (e) => {
+    // Cluster click - zoom in
+    addListener('click', 'clusters', (e) => {
       const features = map.current.queryRenderedFeatures(e.point, { layers: ['clusters'] });
       const clusterId = features[0].properties.cluster_id;
       map.current.getSource('projects').getClusterExpansionZoom(clusterId, (err, zoom) => {
@@ -214,20 +270,22 @@ const ProjectMap = () => {
       });
     });
 
-    // Unclustered point click
-    map.current.on('click', 'unclustered-point', (e) => {
+    // Unclustered point click - show popup
+    addListener('click', 'unclustered-point', (e) => {
       const p = e.features[0].properties;
       const c = STATUS_COLORS[p.status] || '#778CA3';
+      const isLight = stateRef.current.isLightMode;
+      
       new mapboxgl.Popup({ maxWidth: '300px', offset: 12, className: 'rea-popup' })
         .setLngLat(e.lngLat)
         .setHTML(`
           <div style="font-family:'Barlow',sans-serif;padding:4px 0">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:${currentIsLight ? '#111' : '#fff'};line-height:1.3;margin-bottom:8px">${p.title}</div>
-            <span style="background:${c};color:#fff;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase">${p.status||'UNKNOWN'}</span>
-            <div style="margin-top:10px;font-size:12px;color:${currentIsLight ? '#555' : '#aaa'};line-height:1.8">
-              <div>📍 <strong>${p.location||'—'}</strong>, ${p.state}</div>
-              <div>⚡ ${p.type||'—'}</div>
-              <div>🏗 ${p.contractor||'N/A'}</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:${isLight ? '#111' : '#fff'};line-height:1.3;margin-bottom:8px">${p.title}</div>
+            <span style="background:${c};color:#fff;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase">${p.status || 'UNKNOWN'}</span>
+            <div style="margin-top:10px;font-size:12px;color:${isLight ? '#555' : '#aaa'};line-height:1.8">
+              <div>📍 <strong>${p.location || '—'}</strong>, ${p.state}</div>
+              <div>⚡ ${p.type || '—'}</div>
+              <div>🏗 ${p.contractor || 'N/A'}</div>
               <div>📅 ${p.year}</div>
             </div>
           </div>
@@ -236,24 +294,19 @@ const ProjectMap = () => {
     });
 
     // Cursor handlers
-    map.current.on('mouseenter', 'clusters', () => { map.current.getCanvas().style.cursor = 'pointer'; });
-    map.current.on('mouseleave', 'clusters', () => { map.current.getCanvas().style.cursor = ''; });
-    map.current.on('mouseenter', 'unclustered-point', () => { map.current.getCanvas().style.cursor = 'pointer'; });
-    map.current.on('mouseleave', 'unclustered-point', () => { map.current.getCanvas().style.cursor = ''; });
-  }, [applyFilter]);
+    addListener('mouseenter', 'clusters', () => { map.current.getCanvas().style.cursor = 'pointer'; });
+    addListener('mouseleave', 'clusters', () => { map.current.getCanvas().style.cursor = ''; });
+    addListener('mouseenter', 'unclustered-point', () => { map.current.getCanvas().style.cursor = 'pointer'; });
+    addListener('mouseleave', 'unclustered-point', () => { map.current.getCanvas().style.cursor = ''; });
+  }, [addListener, clearListeners, applyFilter]);
 
-  // Initialize map layers - uses refs to avoid circular dependencies
+  // Initialize map layers
   const initializeMapLayers = useCallback(() => {
     if (!map.current) return;
 
-    const currentView = viewRef.current;
-    const currentIsLight = isLightModeRef.current;
-    const currentSelectedYears = selectedYearsRef.current;
-    const currentSelectedStatus = selectedStatusRef.current;
-    const currentSelectedTypes = selectedTypesRef.current;
-    const currentActiveState = activeStateRef.current;
+    const currentState = stateRef.current;
 
-    // Add states source if not exists
+    // Add states source
     if (!map.current.getSource('states')) {
       map.current.addSource('states', {
         type: 'geojson',
@@ -261,41 +314,45 @@ const ProjectMap = () => {
       });
     }
     
-    // State choropleth
+    // State choropleth layer
     if (!map.current.getLayer('state-choropleth')) {
       map.current.addLayer({
         id: 'state-choropleth', 
         type: 'fill', 
         source: 'states',
-        layout: { visibility: currentView === 'coverage' ? 'visible' : 'none' },
+        layout: { visibility: currentState.view === 'coverage' ? 'visible' : 'none' },
         paint: {
           'fill-color': ['interpolate', ['linear'], ['get', 'total'], 
-            0, currentIsLight ? '#e8f5e9' : '#1a3d1a', 
-            40, currentIsLight ? '#a5d6a7' : '#2d5a2d', 
-            80, currentIsLight ? '#66bb6a' : '#00843D', 
-            120, currentIsLight ? '#43a047' : '#00C48C', 
-            160, currentIsLight ? '#2e7d32' : '#4ade80'
+            0, currentState.isLightMode ? '#e8f5e9' : '#1a3d1a', 
+            40, currentState.isLightMode ? '#a5d6a7' : '#2d5a2d', 
+            80, currentState.isLightMode ? '#66bb6a' : '#00843D', 
+            120, currentState.isLightMode ? '#43a047' : '#00C48C', 
+            160, currentState.isLightMode ? '#2e7d32' : '#4ade80'
           ],
           'fill-opacity': 0.82,
         },
       });
     }
     
-    // State fill
+    // State fill layer
     if (!map.current.getLayer('state-fill')) {
       map.current.addLayer({
-        id: 'state-fill', type: 'fill', source: 'states',
+        id: 'state-fill', 
+        type: 'fill', 
+        source: 'states',
         paint: { 
           'fill-color': REA_GREEN, 
-          'fill-opacity': currentIsLight ? 0.1 : 0.15 
+          'fill-opacity': currentState.isLightMode ? 0.1 : 0.15 
         },
       });
     }
     
-    // State hover
+    // State hover layer
     if (!map.current.getLayer('state-hover')) {
       map.current.addLayer({
-        id: 'state-hover', type: 'fill', source: 'states',
+        id: 'state-hover', 
+        type: 'fill', 
+        source: 'states',
         paint: { 'fill-color': ACCENT_GOLD, 'fill-opacity': 0.25 },
         filter: ['==', 'shapeName', ''],
       });
@@ -304,9 +361,11 @@ const ProjectMap = () => {
     // State borders
     if (!map.current.getLayer('state-border')) {
       map.current.addLayer({
-        id: 'state-border', type: 'line', source: 'states',
+        id: 'state-border', 
+        type: 'line', 
+        source: 'states',
         paint: { 
-          'line-color': currentIsLight ? REA_GREEN : '#4ade80', 
+          'line-color': currentState.isLightMode ? REA_GREEN : '#4ade80', 
           'line-width': 1, 
           'line-opacity': 0.4 
         },
@@ -316,13 +375,15 @@ const ProjectMap = () => {
     // Active state border
     if (!map.current.getLayer('state-border-active')) {
       map.current.addLayer({
-        id: 'state-border-active', type: 'line', source: 'states',
+        id: 'state-border-active', 
+        type: 'line', 
+        source: 'states',
         paint: { 'line-color': ACCENT_GOLD, 'line-width': 3, 'line-opacity': 1 },
         filter: ['==', 'shapeName', ''],
       });
     }
 
-    // Projects source
+    // Projects source with clustering
     if (!map.current.getSource('projects')) {
       map.current.addSource('projects', {
         type: 'geojson',
@@ -338,14 +399,14 @@ const ProjectMap = () => {
       });
     }
 
-    // Heatmap
+    // Heatmap layer
     if (!map.current.getLayer('heatmap')) {
       map.current.addLayer({
         id: 'heatmap',
         type: 'heatmap',
         source: 'projects',
         maxzoom: 10,
-        layout: { visibility: currentView !== 'coverage' ? 'visible' : 'none' },
+        layout: { visibility: currentState.view !== 'coverage' ? 'visible' : 'none' },
         paint: {
           'heatmap-weight': ['interpolate', ['linear'], ['get', 'point_count'], 0, 0.1, 10, 1],
           'heatmap-intensity': ['interpolate', ['linear'], ['zoom'], 0, 1, 9, 3],
@@ -366,14 +427,14 @@ const ProjectMap = () => {
       });
     }
 
-    // Clusters
+    // Clusters layer
     if (!map.current.getLayer('clusters')) {
       map.current.addLayer({
         id: 'clusters',
         type: 'circle',
         source: 'projects',
         filter: ['has', 'point_count'],
-        layout: { visibility: currentView !== 'coverage' ? 'visible' : 'none' },
+        layout: { visibility: currentState.view !== 'coverage' ? 'visible' : 'none' },
         paint: {
           'circle-color': [
             'case',
@@ -393,7 +454,7 @@ const ProjectMap = () => {
       });
     }
 
-    // Cluster count
+    // Cluster count labels
     if (!map.current.getLayer('cluster-count')) {
       map.current.addLayer({
         id: 'cluster-count',
@@ -405,7 +466,7 @@ const ProjectMap = () => {
           'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
           'text-size': 12,
           'text-allow-overlap': true,
-          'visibility': currentView !== 'coverage' ? 'visible' : 'none'
+          'visibility': currentState.view !== 'coverage' ? 'visible' : 'none'
         },
         paint: {
           'text-color': '#ffffff',
@@ -415,14 +476,14 @@ const ProjectMap = () => {
       });
     }
 
-    // Unclustered points
+    // Unclustered points layer
     if (!map.current.getLayer('unclustered-point')) {
       map.current.addLayer({
         id: 'unclustered-point',
         type: 'circle',
         source: 'projects',
         filter: ['!', ['has', 'point_count']],
-        layout: { visibility: currentView !== 'coverage' ? 'visible' : 'none' },
+        layout: { visibility: currentState.view !== 'coverage' ? 'visible' : 'none' },
         paint: {
           'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 4, 8, 6, 12, 10],
           'circle-color': [
@@ -444,9 +505,15 @@ const ProjectMap = () => {
     attachEventListeners();
     
     // Apply current filters
-    applyFilter(currentSelectedYears, currentSelectedStatus, currentSelectedTypes, currentActiveState);
-  }, [attachEventListeners, applyFilter]);
+    applyFilter(
+      currentState.selectedYears,
+      currentState.selectedStatus,
+      currentState.selectedTypes,
+      currentState.activeState
+    );
+  }, [attachEventListeners, applyFilter, addListener]);
 
+  // Toggle theme between light and dark
   const toggleTheme = useCallback(() => {
     if (!map.current) return;
     
@@ -471,6 +538,7 @@ const ProjectMap = () => {
     });
   }, [isLightMode, initializeMapLayers]);
 
+  // Switch between views
   const switchView = useCallback((newView) => {
     if (!map.current || !mapReady) return;
     setView(newView);
@@ -486,7 +554,17 @@ const ProjectMap = () => {
     map.current.setLayoutProperty('state-choropleth', 'visibility', isCov ? 'visible' : 'none');
     map.current.setPaintProperty('state-fill', 'fill-opacity', isCov ? 0 : (isLightMode ? 0.1 : 0.15));
     
-    if (!isCov) {
+    // Update point colors for technology view
+    if (newView === 'technology') {
+      map.current.setPaintProperty('unclustered-point', 'circle-color', [
+        'case',
+        ['all', ['in', 'SOLAR STREET LIGHT', ['get', 'type']], ['!', ['in', 'MINI GRID', ['get', 'type']]]], '#FFB800',
+        ['in', 'MINI GRID', ['get', 'type']], '#1E90FF',
+        ['in', 'SOLAR HOME', ['get', 'type']], '#A855F7',
+        ['in', 'GRID', ['get', 'type']], '#FF4757',
+        '#778CA3',
+      ]);
+    } else if (newView === 'performance') {
       map.current.setPaintProperty('unclustered-point', 'circle-color', [
         'match', ['get', 'status'],
         'COMPLETED', STATUS_COLORS['COMPLETED'], 
@@ -500,10 +578,26 @@ const ProjectMap = () => {
     applyFilter(selectedYears, selectedStatus, selectedTypes, null);
   }, [mapReady, isLightMode, selectedYears, selectedStatus, selectedTypes, applyFilter]);
 
-  const toggleYear   = (y) => { const n = selectedYears.includes(y) ? selectedYears.filter(v=>v!==y) : [...selectedYears,y]; setSelectedYears(n); applyFilter(n, selectedStatus, selectedTypes, activeState); };
-  const toggleStatus = (s) => { const n = selectedStatus.includes(s) ? selectedStatus.filter(v=>v!==s) : [...selectedStatus,s]; setSelectedStatus(n); applyFilter(selectedYears, n, selectedTypes, activeState); };
-  const toggleType   = (t) => { const n = selectedTypes.includes(t) ? selectedTypes.filter(v=>v!==t) : [...selectedTypes,t]; setSelectedTypes(n); applyFilter(selectedYears, selectedStatus, n, activeState); };
+  // Filter toggle handlers
+  const toggleYear = (y) => {
+    const n = selectedYears.includes(y) ? selectedYears.filter(v => v !== y) : [...selectedYears, y];
+    setSelectedYears(n);
+    applyFilter(n, selectedStatus, selectedTypes, activeState);
+  };
 
+  const toggleStatus = (s) => {
+    const n = selectedStatus.includes(s) ? selectedStatus.filter(v => v !== s) : [...selectedStatus, s];
+    setSelectedStatus(n);
+    applyFilter(selectedYears, n, selectedTypes, activeState);
+  };
+
+  const toggleType = (t) => {
+    const n = selectedTypes.includes(t) ? selectedTypes.filter(v => v !== t) : [...selectedTypes, t];
+    setSelectedTypes(n);
+    applyFilter(selectedYears, selectedStatus, n, activeState);
+  };
+
+  // Clear all filters
   const clearAll = () => {
     setSelectedYears([]);
     setSelectedStatus([]);
@@ -517,6 +611,7 @@ const ProjectMap = () => {
 
   const activeFilterCount = selectedYears.length + selectedStatus.length + selectedTypes.length;
 
+  // Initialize map on mount
   useEffect(() => {
     if (map.current) return;
     
@@ -537,24 +632,37 @@ const ProjectMap = () => {
       map.current.setPaintProperty('background', 'background-color', DARK_BG);
       
       // Calculate total projects from source data
-      const projectsData = require('../data/projects-final.geojson');
-      const total = calculateTotalProjects(projectsData);
-      setTotalProjects(total);
-      setPointCount(total);
+      try {
+        const projectsData = require('../data/projects-final.geojson');
+        const total = calculateTotalProjects(projectsData);
+        setTotalProjects(total);
+        setPointCount(total);
+      } catch (e) {
+        console.error('Failed to load projects data:', e);
+      }
       
       initializeMapLayers();
       setMapReady(true);
     });
-  }, [calculateTotalProjects, initializeMapLayers]);
+
+    // Cleanup on unmount
+    return () => {
+      clearListeners();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, [calculateTotalProjects, initializeMapLayers, clearListeners]);
 
   // Update project count display
   useEffect(() => {
     if (!mapReady) return;
     
     const timer = setTimeout(() => {
-      if (view === 'performance') {
-        const visiblePoints = map.current?.queryRenderedFeatures({ layers: ['unclustered-point'] }) || [];
-        const clusters = map.current?.queryRenderedFeatures({ layers: ['clusters'] }) || [];
+      if (view !== 'coverage' && map.current) {
+        const visiblePoints = map.current.queryRenderedFeatures({ layers: ['unclustered-point'] }) || [];
+        const clusters = map.current.queryRenderedFeatures({ layers: ['clusters'] }) || [];
         
         let total = visiblePoints.length;
         clusters.forEach(cluster => {
@@ -570,37 +678,83 @@ const ProjectMap = () => {
 
   const displayName = activeState === 'ABUJA FEDERAL CAPITAL TERRITORY' ? 'FCT – Abuja' : activeState;
   
-  // Show side panel when in coverage view and a state is selected
-  const showSide = activeState && stateData && view === 'coverage';
+  const showSide = activeState && stateData && view !== 'performance';
 
+  // Render side panel content based on current view
   const renderSideContent = () => {
     if (!stateData) return null;
     const d = stateData;
-    return (
-      <div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-          <StatCard label="Total Projects" value={d.total} color={REA_GREEN} isLight={isLightMode} />
-          <StatCard label="Completion Rate" value={`${d.pct_completed}%`} color="#00C48C" isLight={isLightMode} />
+    
+    if (view === 'coverage') {
+      return (
+        <div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+            <StatCard label="Total Projects" value={d.total} color={REA_GREEN} isLight={isLightMode} />
+            <StatCard label="Completion Rate" value={`${d.pct_completed}%`} color="#00C48C" isLight={isLightMode} />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <StatCard label="Completed" value={d.completed} color="#00C48C" isLight={isLightMode} />
+            <StatCard label="Ongoing" value={d.ongoing} color="#FFB800" isLight={isLightMode} />
+            <StatCard label="Yet to Mobilize" value={d.yet_to_mobilize} color="#FF4757" isLight={isLightMode} />
+          </div>
+          <div style={{ marginTop: 14, height: 6, borderRadius: 10, background: isLightMode ? '#e0e0e0' : '#333', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${d.pct_completed}%`, background: `linear-gradient(90deg, ${REA_GREEN}, #00C48C)`, borderRadius: 10 }} />
+          </div>
+          <div style={{ fontSize: 10, color: isLightMode ? '#666' : '#888', marginTop: 4, fontFamily: "'Barlow', sans-serif" }}>{d.pct_completed}% of projects completed</div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <StatCard label="Completed" value={d.completed} color="#00C48C" isLight={isLightMode} />
-          <StatCard label="Ongoing" value={d.ongoing} color="#FFB800" isLight={isLightMode} />
-          <StatCard label="Yet to Mobilize" value={d.yet_to_mobilize} color="#FF4757" isLight={isLightMode} />
+      );
+    }
+    
+    if (view === 'technology') {
+      const techData = [
+        { label: 'Solar Street Light', value: Number(d.solar_street_light) || 0, color: '#FFB800' },
+        { label: 'Grid Extension', value: Number(d.grid) || 0, color: '#FF4757' },
+        { label: 'Solar Mini Grid', value: Number(d.solar_mini_grid) || 0, color: '#1E90FF' },
+        { label: 'Solar Home System', value: Number(d.solar_home_system) || 0, color: '#A855F7' },
+        { label: 'Other', value: Number(d.other_type) || 0, color: '#778CA3' },
+      ];
+      return (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+            <PieChart data={techData} size={100} />
+            <div style={{ flex: 1 }}>
+              {techData.map(td => (
+                <div key={td.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: td.color, display: 'inline-block', flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, color: isLightMode ? '#444' : '#ccc', fontFamily: "'Barlow', sans-serif" }}>{td.label}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 10, color: isLightMode ? '#aaa' : '#777', fontFamily: "'Barlow', sans-serif" }}>{td.value}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: td.color, fontFamily: "'Barlow Condensed', sans-serif", minWidth: 32, textAlign: 'right' }}>{pct(td.value, d.total)}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ textAlign: 'center', fontSize: 10, color: isLightMode ? '#aaa' : '#777', borderTop: `1px solid ${isLightMode ? '#f0f0f0' : '#333'}`, paddingTop: 10, fontFamily: "'Barlow', sans-serif" }}>
+            {d.total} total projects
+          </div>
         </div>
-        <div style={{ marginTop: 14, height: 6, borderRadius: 10, background: isLightMode ? '#e0e0e0' : '#333', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${d.pct_completed}%`, background: `linear-gradient(90deg, ${REA_GREEN}, #00C48C)`, borderRadius: 10 }} />
-        </div>
-        <div style={{ fontSize: 10, color: isLightMode ? '#666' : '#888', marginTop: 4, fontFamily: "'Barlow', sans-serif" }}>{d.pct_completed}% of projects completed</div>
-      </div>
-    );
+      );
+    }
+    
+    return null;
   };
 
+  // Render legend based on current view
   const renderLegend = () => {
-    const entries = view === 'coverage'
-      ? (isLightMode 
-          ? [['#2e7d32','120+ projects'],['#43a047','80–120'],['#66bb6a','40–80'],['#a5d6a7','Under 40'],['#e8f5e9','0–few']]
-          : [['#4ade80','120+ projects'],['#00C48C','80–120'],['#00843D','40–80'],['#2d5a2d','Under 40'],['#1a3d1a','0–few']])
-      : [['#00C48C','Completed'],['#FFB800','Ongoing'],['#FF4757','Yet to Mobilize']];
+    let entries;
+    if (view === 'coverage') {
+      entries = isLightMode 
+        ? [['#2e7d32','120+ projects'],['#43a047','80–120'],['#66bb6a','40–80'],['#a5d6a7','Under 40'],['#e8f5e9','0–few']]
+        : [['#4ade80','120+ projects'],['#00C48C','80–120'],['#00843D','40–80'],['#2d5a2d','Under 40'],['#1a3d1a','0–few']];
+    } else if (view === 'performance') {
+      entries = [['#00C48C','Completed'],['#FFB800','Ongoing'],['#FF4757','Yet to Mobilize']];
+    } else {
+      entries = [['#FFB800','Solar Street Light'],['#FF4757','Grid Extension'],['#1E90FF','Solar Mini Grid'],['#A855F7','Solar Home System'],['#778CA3','Other']];
+    }
+    
     const isSquare = view === 'coverage';
     return entries.map(([color, label]) => (
       <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
@@ -726,7 +880,7 @@ const ProjectMap = () => {
             )}
           </button>
 
-          {/* Project count - shows total by default, filtered when state selected */}
+          {/* Project count */}
           {pointCount !== null && view !== 'coverage' && (
             <div style={{
               background: GLASS_BG, backdropFilter: GLASS_BLUR, borderRadius: 10,
@@ -823,7 +977,7 @@ const ProjectMap = () => {
           </div>
         )}
 
-        {/* ── Side Panel (Coverage View) ── */}
+        {/* ── Side Panel ── */}
         {showSide && (
           <div style={{
             position: 'absolute', top: '50%', right: 16,
@@ -838,7 +992,7 @@ const ProjectMap = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ fontSize: 9, fontWeight: 700, color: themeColor, letterSpacing: 2, textTransform: 'uppercase', fontFamily: "'Barlow Condensed', sans-serif", marginBottom: 2 }}>
-                    Coverage Summary
+                    {view === 'coverage' ? 'Coverage Summary' : 'Technology Mix'}
                   </div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: textColor, fontFamily: "'Barlow Condensed', sans-serif", lineHeight: 1.2 }}>
                     {displayName}
@@ -863,7 +1017,7 @@ const ProjectMap = () => {
           minWidth: 160,
         }}>
           <div style={{ fontSize: 10, fontWeight: 800, color: themeColor, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10, fontFamily: "'Barlow Condensed', sans-serif" }}>
-            {view === 'coverage' ? 'Project Density' : 'Project Status'}
+            {view === 'coverage' ? 'Project Density' : view === 'performance' ? 'Project Status' : 'Technology Type'}
           </div>
           {renderLegend()}
         </div>
