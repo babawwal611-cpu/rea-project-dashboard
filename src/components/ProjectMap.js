@@ -613,19 +613,8 @@ const ProjectMap = () => {
       <div style={{ position: 'relative', height: '100vh', fontFamily: "'Barlow', sans-serif" }}>
         <div ref={mapContainer} style={{ height: '100%' }} />
 
-        {/* ── REA Wordmark ── */}
-        <div style={{ position:'absolute', top:16, left:'50%', transform:'translateX(-50%)', zIndex:20, pointerEvents:'none' }}>
-          <div style={{ ...glass({ borderRadius:12, padding:'8px 20px', border:`1.5px solid ${REA_GREEN}35` }), display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:28, height:28, borderRadius:6, background:`linear-gradient(135deg, ${REA_GREEN}, ${REA_DARK})`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:800, color:'#fff', fontFamily:"'Barlow Condensed', sans-serif" }}>REA</div>
-            <div>
-              <div style={{ fontSize:13, fontWeight:700, color:theme.textSecond, fontFamily:"'Barlow Condensed', sans-serif", letterSpacing:0.5 }}>PROJECT MONITORING MAP</div>
-              <div style={{ fontSize:9, color:theme.textMuted, letterSpacing:1, textTransform:'uppercase', fontFamily:"'Barlow', sans-serif" }}>Rural Electrification Agency - Nigeria</div>
-            </div>
-          </div>
-        </div>
-
         {/* ── View Selector ── */}
-        <div style={{ position:'absolute', top:80, left:'50%', transform:'translateX(-50%)', zIndex:20, display:'flex', gap:6 }}>
+        <div style={{ position:'absolute', top:16, left:'50%', transform:'translateX(-50%)', zIndex:20, display:'flex', gap:6 }}>
           {VIEWS.map(v => (
             <button key={v.id} onClick={() => switchView(v.id)} style={{
               padding:'8px 18px', borderRadius:8, cursor:'pointer',
