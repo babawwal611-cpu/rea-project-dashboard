@@ -511,7 +511,6 @@ const ProjectMap = () => {
       currentState.selectedTypes,
       currentState.activeState
     );
-  }, [attachEventListeners, applyFilter, addListener]);
 
   // Toggle theme between light and dark
   const toggleTheme = useCallback(() => {
