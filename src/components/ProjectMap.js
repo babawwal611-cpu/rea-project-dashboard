@@ -207,8 +207,6 @@ const ProjectMap = () => {
     
     clearListeners();
 
-    const currentState = stateRef.current;
-
     // State hover effects
     ['state-fill', 'state-choropleth'].forEach(layer => {
       addListener('mousemove', layer, (e) => {
