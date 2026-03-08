@@ -13,6 +13,7 @@ const DARK_BG     = '#0a1f0a';
 const LIGHT_BG    = '#ffffff';
 const GLASS_DARK  = 'rgba(10, 31, 10, 0.92)';
 const GLASS_LIGHT = 'rgba(255, 255, 255, 0.92)';
+const GLASS_BLUR  = 'blur(12px)';
 const SHADOW      = '0 8px 32px rgba(0,0,0,0.4)';
 
 /* ── Nigeria Bounds ───────────────────────────────────────────────────────── */
@@ -493,7 +494,7 @@ const ProjectMap = () => {
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
       center: [8.6753, 9.0820], 
-      zoom: 5.2,  // Adjusted zoom to show full Nigeria
+      zoom: 5.2,
       maxBounds: NIGERIA_BOUNDS,
       minZoom: 5,
       maxZoom: 14,
@@ -538,6 +539,9 @@ const ProjectMap = () => {
   }, [view, activeState, totalProjects, mapReady, selectedYears, selectedStatus, selectedTypes]);
 
   const displayName = activeState === 'ABUJA FEDERAL CAPITAL TERRITORY' ? 'FCT – Abuja' : activeState;
+  
+  // Show side panel when in coverage view and a state is selected
+  const showSide = activeState && stateData && view === 'coverage';
 
   const renderSideContent = () => {
     if (!stateData) return null;
