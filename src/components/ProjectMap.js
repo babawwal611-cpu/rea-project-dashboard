@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import generateStateReport from '../utils/generateStateReport';
 import mapboxgl from 'mapbox-gl';
 import * as turf from '@turf/turf';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -283,6 +284,27 @@ const ProjectMap = () => {
       paint: { 'line-color': ACCENT_GOLD, 'line-width': 2.5, 'line-opacity': 1 },
       filter: ['==', 'shapeName', ''],
     });
+    
+    // ── Heatmap layer ──
+    map.current.addLayer({
+      id: 'project-heatmap', type: 'heatmap', source: 'projects',
+      layout: { visibility: 'none' },
+      paint: {
+        'heatmap-weight':   ['interpolate',['linear'],['zoom'], 4,0.4, 8,1],
+        'heatmap-intensity':['interpolate',['linear'],['zoom'], 4,0.6, 8,2],
+        'heatmap-color': [
+          'interpolate',['linear'],['heatmap-density'],
+          0,   'rgba(0,84,61,0)',
+          0.2, 'rgba(0,132,61,0.5)',
+          0.4, 'rgba(76,175,80,0.7)',
+          0.6, 'rgba(245,166,35,0.85)',
+          0.8, 'rgba(255,71,87,0.9)',
+          1,   'rgba(255,255,255,1)',
+        ],
+        'heatmap-radius':   ['interpolate',['linear'],['zoom'], 4,18, 8,30],
+        'heatmap-opacity':  ['interpolate',['linear'],['zoom'], 6,0.9, 10,0.5],
+      },
+    });    
     // ── Points layer — always loaded (never visibility:none) so querySourceFeatures works ──
     map.current.addLayer({
       id: 'project-points', type: 'circle', source: 'projects',
@@ -390,6 +412,88 @@ const ProjectMap = () => {
       setMapReady(true);
     });
   }, [isDark, addLayers, recalcChoropleth]);
+
+  /* ── Heatmap toggle ── */
+  const toggleHeatmap = useCallback(() => {
+    if (!map.current || !mapReady) return;
+    setIsHeatmap(prev => {
+      const next = !prev;
+      if (map.current.getLayer('project-heatmap'))
+        map.current.setLayoutProperty('project-heatmap', 'visibility', next ? 'visible' : 'none');
+      // In heatmap mode hide individual points
+      if (map.current.getLayer('project-points')) {
+        map.current.setPaintProperty('project-points', 'circle-opacity',
+          next ? 0 : ['interpolate',['linear'],['zoom'],4,0.45,6,0.68,9,0.88]);
+        map.current.setPaintProperty('project-points', 'circle-stroke-opacity', next ? 0 : 1);
+      }
+      return next;
+    });
+  }, [mapReady]);
+
+  /* ── Fullscreen toggle ── */
+  const toggleFullscreen = useCallback(() => {
+    const el = document.documentElement;
+    if (!document.fullscreenElement) {
+      el.requestFullscreen().catch(() => {});
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  /* ── Export map as PNG ── */
+  const exportMap = useCallback(() => {
+    if (!map.current || isExporting) return;
+    setIsExporting(true);
+    // Wait one frame so any pending renders finish
+    map.current.once('idle', () => {
+      try {
+        const canvas = map.current.getCanvas();
+        const link   = document.createElement('a');
+        link.download = `REA-ProjectMap-${new Date().toISOString().slice(0,10)}.png`;
+        link.href      = canvas.toDataURL('image/png');
+        link.click();
+      } catch(e) {
+        alert('Export failed. Make sure preserveDrawingBuffer is enabled.');
+      }
+      setIsExporting(false);
+    });
+  }, [isExporting]);
+
+  /* ── Generate state PDF report ── */
+  const exportStatePDF = useCallback(() => {
+    if (!stateData) return;
+    const canvas = map.current ? map.current.getCanvas() : null;
+    generateStateReport({
+      stateData,
+      mapCanvas: canvas,
+      isDark,
+    });
+  }, [stateData, isDark]);
+
+  /* ── Escape key to deselect ── */
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setActiveState(null); setStateData(null); setSidePanelIn(false);
+        setPanelOpen(false);
+        if (map.current) {
+          map.current.setFilter('state-border-active', ['==','shapeName','']);
+          applyCoverageFade(null);
+        }
+        setSelectedYears(y => {
+          setSelectedStatus(s => {
+            setSelectedTypes(t => { applyFilter(y,s,t,null); return t; });
+            return s;
+          });
+          return y;
+        });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [applyFilter, applyCoverageFade]);
 
   const toggleYear   = (y) => { const n = selectedYears.includes(y)   ? selectedYears.filter(v=>v!==y)   : [...selectedYears,y];   setSelectedYears(n);   applyFilter(n, selectedStatus, selectedTypes, activeState); };
   const toggleStatus = (s) => { const n = selectedStatus.includes(s)  ? selectedStatus.filter(v=>v!==s)  : [...selectedStatus,s];  setSelectedStatus(n);  applyFilter(selectedYears, n, selectedTypes, activeState); };
@@ -668,6 +772,55 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
             </div>
           )}
         </div>
+
+        {/* ── Bottom-left toolbar: heatmap / fullscreen / export / theme ── */}
+        <div style={{ position:'absolute', bottom:30, left:16, zIndex:20, display:'flex', flexDirection:'column', gap:8 }}>
+
+          {/* Heatmap toggle */}
+          <button onClick={toggleHeatmap} title="Toggle Heatmap"
+            style={{
+              ...glass({ borderRadius:10, width:42, height:42 }),
+              background: isHeatmap ? `linear-gradient(135deg, ${REA_GREEN}, ${REA_DARK})` : theme.glassBg,
+              border:'none', cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              color: isHeatmap ? '#fff' : theme.textPrimary, fontSize:18,
+            }}>
+            {/* flame icon */}
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C9 6 6 8 6 13a6 6 0 0012 0c0-3-1.5-5.5-3-7-0.5 2-1.5 3-3 3.5C13 8 12 5 12 2z"/>
+            </svg>
+          </button>
+
+          {/* Export PNG */}
+          <button onClick={exportMap} title="Export map as PNG"
+            style={{
+              ...glass({ borderRadius:10, width:42, height:42 }),
+              border:'none', cursor: isExporting ? 'wait' : 'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              color: theme.textPrimary, opacity: isExporting ? 0.5 : 1,
+            }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+
+          {/* Fullscreen */}
+          <button onClick={toggleFullscreen} title="Toggle Fullscreen"
+            style={{
+              ...glass({ borderRadius:10, width:42, height:42 }),
+              background: isFullscreen ? `linear-gradient(135deg, ${REA_GREEN}, ${REA_DARK})` : theme.glassBg,
+              border:'none', cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              color: isFullscreen ? '#fff' : theme.textPrimary,
+            }}>
+            {isFullscreen
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M8 3v3a2 2 0 01-2 2H3"/><path d="M21 8h-3a2 2 0 01-2-2V3"/><path d="M3 16h3a2 2 0 012 2v3"/><path d="M16 21v-3a2 2 0 012-2h3"/></svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M3 8V3h5"/><path d="M21 8V3h-5"/><path d="M3 16v5h5"/><path d="M21 16v5h-5"/></svg>
+            }
+          </button>
+
 
         {/* ── Dark / Light toggle — bottom left ── */}
         <button
