@@ -915,6 +915,7 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
                   map.current.setFilter('state-border-active',['==','shapeName','']);
                 }} style={{ background:'none', border:`1px solid ${theme.chipBorder}`, borderRadius:6, cursor:'pointer', color:theme.textMuted, fontSize:12, padding:'3px 7px' }}>✕</button>
               </div>
+            </div>
               <div style={{ marginTop:10, height:2, borderRadius:2, background:`linear-gradient(90deg, ${REA_GREEN}, transparent)` }} />
             </div>
             {renderSideContent()}
