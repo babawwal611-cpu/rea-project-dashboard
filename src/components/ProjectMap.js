@@ -145,7 +145,7 @@ const ProjectMap = () => {
   const map          = useRef(null);
 
   const [isDark,         setIsDark]         = useState(true);
-  const [view,           setView]           = useState('coverage');
+  const [view,           setView]           = useState('performance');
   const [panelOpen,      setPanelOpen]      = useState(false);
   const [selectedYears,  setSelectedYears]  = useState([]);
   const [selectedStatus, setSelectedStatus] = useState([]);
@@ -402,7 +402,7 @@ const ProjectMap = () => {
     applyCoverageFade(null);
     if (map.current) {
       map.current.setFilter('state-border-active', ['==', 'shapeName', '']);
-      map.current.flyTo({ center: [8.6753, 9.0820], zoom: 6.2 });
+      map.current.flyTo({ center: [8.6753, 9.0820], zoom: 5.8 });
     }
   };
 
@@ -414,7 +414,7 @@ const ProjectMap = () => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: THEMES.dark.mapStyle,
-      center: [8.6753, 9.0820], zoom: 6.2,
+      center: [8.6753, 9.0820], zoom: 5.8,
     });
     map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
 
@@ -694,7 +694,7 @@ const ProjectMap = () => {
                   map.current.setFilter('state-border-active', ['==','shapeName','']);
                   applyCoverageFade(null);
                   applyFilter(selectedYears, selectedStatus, selectedTypes, null);
-                  map.current.flyTo({ center:[8.6753,9.0820], zoom:6.2 });
+                  map.current.flyTo({ center:[8.6753,9.0820], zoom:5.8 });
                 }} style={{ background:'none', border:'none', cursor:'pointer', color:theme.textMuted, fontSize:14 }}>✕</button>
               </div>
             )}
