@@ -617,11 +617,10 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
         <div ref={mapContainer} style={{ height: '100%' }} />
 {/* ── REA Wordmark ── */}
         <div style={{ position:'absolute', top:16, right:16, zIndex:20, pointerEvents:'none' }}>
-          <div style={{ ...glass({ borderRadius:12, padding:'8px 20px', border:`1.5px solid ${REA_GREEN}35` }), display:'flex', alignItems:'center', gap:10 }}>
 <img
-  src="/realogo.png"
+  src="/realogo.PNG"
   alt="REA Logo"
-  style={{ width: 40, height: 40, objectFit: 'contain' }}
+  style={{ width: 60, height: 60, objectFit: 'contain' }}
 />
           <div>
             </div>
