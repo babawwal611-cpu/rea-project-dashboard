@@ -899,6 +899,16 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
                   </div>
                   <div style={{ fontSize:16, fontWeight:800, color:theme.textPrimary, fontFamily:"'Barlow Condensed', sans-serif", lineHeight:1.2 }}>{displayName}</div>
                 </div>
+                <div style={{ display:'flex', gap:6 }}>
+                  <button onClick={exportStatePDF} title="Download PDF Report"
+                    style={{ background:'none', border:`1px solid ${REA_GREEN}50`, borderRadius:6, cursor:'pointer', color:REA_GREEN, fontSize:10, padding:'3px 9px', fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, letterSpacing:0.5, display:'flex', alignItems:'center', gap:4 }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    PDF
+                  </button>
                 <button onClick={() => {
                   setActiveState(null); setStateData(null); setSidePanelIn(false);
                   applyCoverageFade(null);
