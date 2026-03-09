@@ -159,6 +159,10 @@ const ProjectMap = () => {
 
   const theme = isDark ? THEMES.dark : THEMES.light;
 
+  const [isHeatmap,    setIsHeatmap]    = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isExporting,  setIsExporting]  = useState(false);
+
   /* ── Recalculate choropleth live from filtered source features ── */
   const recalcChoropleth = useCallback((years, statuses, types, stateName) => {
     if (!map.current || !map.current.getSource('projects')) return;
@@ -806,7 +810,7 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
             </svg>
           </button>
 
-          {/* Fullscreen */}
+         {/* Fullscreen */}
           <button onClick={toggleFullscreen} title="Toggle Fullscreen"
             style={{
               ...glass({ borderRadius:10, width:42, height:42 }),
@@ -821,22 +825,22 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
             }
           </button>
 
+          {/* Dark / Light toggle */}
+          <button
+            onClick={toggleTheme}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            style={{
+              ...glass({ borderRadius:10, width:42, height:42 }),
+              border: `1px solid ${isDark ? 'rgba(0,180,80,0.28)' : 'rgba(0,0,0,0.09)'}`,
+              cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
+              color: isDark ? '#4ade80' : '#666',
+              transition:'all 0.25s ease',
+            }}
+          >
+            {isDark ? <MoonIcon /> : <SunIcon />}
+          </button>
 
-        {/* ── Dark / Light toggle — bottom left ── */}
-        <button
-          onClick={toggleTheme}
-          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          style={{
-            ...glass({ borderRadius:10, width:42, height:42 }),
-            position:'absolute', bottom:30, left:16, zIndex:20,
-            border: `1px solid ${isDark ? 'rgba(0,180,80,0.28)' : 'rgba(0,0,0,0.09)'}`,
-            cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
-            color: isDark ? '#4ade80' : '#666',
-            transition:'all 0.25s ease',
-          }}
-        >
-          {isDark ? <MoonIcon /> : <SunIcon />}
-        </button>
+        </div>
 
         {/* ── Filter Panel ── */}
         {panelOpen && (
