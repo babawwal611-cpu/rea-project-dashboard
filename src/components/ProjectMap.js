@@ -622,9 +622,6 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
   alt="REA Logo"
   style={{ width: 60, height: 60, objectFit: 'contain' }}
 />
-          <div>
-            </div>
-          </div>
         </div>
         {/* ── View Selector ── */}
         <div style={{ position:'absolute', top:16, left:'50%', transform:'translateX(-50%)', zIndex:20, display:'flex', gap:6 }}>
