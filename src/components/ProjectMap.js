@@ -145,7 +145,7 @@ const ProjectMap = () => {
   const map          = useRef(null);
 
   const [isDark,         setIsDark]         = useState(true);
-  const [view,           setView]           = useState('performance');
+  const [view,           setView]           = useState('coverage');
   const [panelOpen,      setPanelOpen]      = useState(false);
   const [selectedYears,  setSelectedYears]  = useState([]);
   const [selectedStatus, setSelectedStatus] = useState([]);
@@ -420,7 +420,10 @@ const ProjectMap = () => {
 
     map.current.on('load', () => {
       addLayers(THEMES.dark.pointStroke);
-
+      map.current.setLayoutProperty('state-choropleth', 'visibility', 'visible');
+  map.current.setPaintProperty('project-points', 'circle-opacity', 0);
+map.current.setPaintProperty('project-points', 'circle-stroke-opacity', 0);
+map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
       setTimeout(() => {
         setPointCount(map.current.queryRenderedFeatures({ layers: ['project-points'] }).length);
         setMapReady(true);
