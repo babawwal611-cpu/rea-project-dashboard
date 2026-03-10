@@ -49,6 +49,58 @@ const VIEWS = [
   { id: 'technology',  label: 'TECHNOLOGY',  icon: '◆' },
 ];
 
+/* ── Intelligence Mode: State energy data ─────────────────────────────────── */
+/* Sources: Global Solar Atlas (GHI), World Bank/NESP Nigeria 2023 (access),  */
+/* NPC 2023 projections (population)                                           */
+const STATE_INTEL = {
+  "Abia":{"ghi":4.52,"access_pct":71,"population":3.73,"rural_pct":68,"opportunity_score":12.4,"unelectrified_pop":1.08},
+  "Adamawa":{"ghi":5.81,"access_pct":36,"population":4.25,"rural_pct":76,"opportunity_score":47.2,"unelectrified_pop":2.72},
+  "Akwa Ibom":{"ghi":4.31,"access_pct":75,"population":5.98,"rural_pct":55,"opportunity_score":14.8,"unelectrified_pop":1.50},
+  "Anambra":{"ghi":4.48,"access_pct":80,"population":7.08,"rural_pct":53,"opportunity_score":11.2,"unelectrified_pop":1.42},
+  "Bauchi":{"ghi":6.02,"access_pct":28,"population":7.17,"rural_pct":82,"opportunity_score":72.1,"unelectrified_pop":5.16},
+  "Bayelsa":{"ghi":4.22,"access_pct":58,"population":2.28,"rural_pct":70,"opportunity_score":10.3,"unelectrified_pop":0.96},
+  "Benue":{"ghi":5.12,"access_pct":42,"population":6.53,"rural_pct":74,"opportunity_score":51.8,"unelectrified_pop":3.79},
+  "Borno":{"ghi":6.38,"access_pct":22,"population":6.10,"rural_pct":79,"opportunity_score":74.8,"unelectrified_pop":4.76},
+  "Cross River":{"ghi":4.41,"access_pct":52,"population":4.05,"rural_pct":72,"opportunity_score":25.6,"unelectrified_pop":1.94},
+  "Delta":{"ghi":4.35,"access_pct":73,"population":5.66,"rural_pct":57,"opportunity_score":13.1,"unelectrified_pop":1.53},
+  "Ebonyi":{"ghi":4.61,"access_pct":44,"population":3.11,"rural_pct":78,"opportunity_score":22.4,"unelectrified_pop":1.74},
+  "Edo":{"ghi":4.44,"access_pct":76,"population":4.74,"rural_pct":54,"opportunity_score":10.9,"unelectrified_pop":1.14},
+  "Ekiti":{"ghi":4.78,"access_pct":69,"population":3.35,"rural_pct":62,"opportunity_score":13.7,"unelectrified_pop":1.04},
+  "Enugu":{"ghi":4.55,"access_pct":74,"population":4.56,"rural_pct":60,"opportunity_score":11.8,"unelectrified_pop":1.19},
+  "Federal Capital Territory":{"ghi":5.53,"access_pct":85,"population":3.68,"rural_pct":38,"opportunity_score":8.2,"unelectrified_pop":0.55},
+  "Gombe":{"ghi":5.94,"access_pct":31,"population":3.61,"rural_pct":75,"opportunity_score":44.6,"unelectrified_pop":2.49},
+  "Imo":{"ghi":4.49,"access_pct":72,"population":5.43,"rural_pct":64,"opportunity_score":14.2,"unelectrified_pop":1.52},
+  "Jigawa":{"ghi":6.21,"access_pct":19,"population":6.47,"rural_pct":88,"opportunity_score":78.0,"unelectrified_pop":5.24},
+  "Kaduna":{"ghi":5.88,"access_pct":51,"population":9.33,"rural_pct":67,"opportunity_score":57.3,"unelectrified_pop":4.57},
+  "Kano":{"ghi":6.14,"access_pct":48,"population":15.93,"rural_pct":58,"opportunity_score":88.8,"unelectrified_pop":8.28},
+  "Katsina":{"ghi":6.28,"access_pct":23,"population":9.17,"rural_pct":84,"opportunity_score":89.7,"unelectrified_pop":7.06},
+  "Kebbi":{"ghi":6.11,"access_pct":21,"population":5.59,"rural_pct":83,"opportunity_score":68.4,"unelectrified_pop":4.42},
+  "Kogi":{"ghi":5.21,"access_pct":45,"population":4.47,"rural_pct":71,"opportunity_score":36.2,"unelectrified_pop":2.46},
+  "Kwara":{"ghi":5.34,"access_pct":57,"population":3.44,"rural_pct":65,"opportunity_score":24.1,"unelectrified_pop":1.48},
+  "Lagos":{"ghi":4.28,"access_pct":92,"population":15.93,"rural_pct":12,"opportunity_score":5.1,"unelectrified_pop":1.27},
+  "Nasarawa":{"ghi":5.41,"access_pct":38,"population":2.78,"rural_pct":73,"opportunity_score":30.4,"unelectrified_pop":1.72},
+  "Niger":{"ghi":5.67,"access_pct":29,"population":6.75,"rural_pct":80,"opportunity_score":64.9,"unelectrified_pop":4.79},
+  "Ogun":{"ghi":4.51,"access_pct":77,"population":6.20,"rural_pct":48,"opportunity_score":10.4,"unelectrified_pop":1.43},
+  "Ondo":{"ghi":4.62,"access_pct":66,"population":4.69,"rural_pct":58,"opportunity_score":17.6,"unelectrified_pop":1.59},
+  "Osun":{"ghi":4.71,"access_pct":71,"population":4.94,"rural_pct":52,"opportunity_score":11.6,"unelectrified_pop":1.43},
+  "Oyo":{"ghi":4.82,"access_pct":74,"population":8.54,"rural_pct":45,"opportunity_score":14.9,"unelectrified_pop":2.22},
+  "Plateau":{"ghi":5.62,"access_pct":40,"population":4.72,"rural_pct":69,"opportunity_score":43.8,"unelectrified_pop":2.83},
+  "Rivers":{"ghi":4.26,"access_pct":78,"population":7.89,"rural_pct":46,"opportunity_score":12.3,"unelectrified_pop":1.74},
+  "Sokoto":{"ghi":6.33,"access_pct":17,"population":5.53,"rural_pct":86,"opportunity_score":74.9,"unelectrified_pop":4.59},
+  "Taraba":{"ghi":5.44,"access_pct":27,"population":3.32,"rural_pct":81,"opportunity_score":45.7,"unelectrified_pop":2.42},
+  "Yobe":{"ghi":6.29,"access_pct":20,"population":3.79,"rural_pct":85,"opportunity_score":61.3,"unelectrified_pop":3.03},
+  "Zamfara":{"ghi":6.18,"access_pct":18,"population":4.51,"rural_pct":87,"opportunity_score":67.2,"unelectrified_pop":3.70},
+};
+
+/* Helper: match shapeName to STATE_INTEL key */
+const getIntel = (shapeName) => {
+  if (!shapeName) return null;
+  if (STATE_INTEL[shapeName]) return STATE_INTEL[shapeName];
+  // FCT alias
+  if (shapeName === 'Federal Capital Territory') return STATE_INTEL['Federal Capital Territory'];
+  return null;
+};
+
 const YEARS    = ['2019','2020','2021','2022','2023','2024','2025'];
 const STATUSES = ['COMPLETED','ONGOING','YET TO MOBILIZE'];
 const TYPES    = [
@@ -140,6 +192,23 @@ const Chip = ({ label, active, color, theme, onClick }) => (
   </button>
 );
 
+/* ── State geographic centroids for population circles ───────────────────── */
+const STATE_CENTROIDS = {
+  "Abia":[7.35,5.45],"Adamawa":[12.40,9.30],"Akwa Ibom":[7.85,4.90],
+  "Anambra":[6.92,6.20],"Bauchi":[10.30,10.30],"Bayelsa":[6.08,4.77],
+  "Benue":[8.75,7.47],"Borno":[13.15,11.80],"Cross River":[8.32,5.85],
+  "Delta":[5.90,5.52],"Ebonyi":[8.07,6.27],"Edo":[5.60,6.54],
+  "Ekiti":[5.22,7.72],"Enugu":[7.49,6.46],"Federal Capital Territory":[7.49,9.06],
+  "Gombe":[11.17,10.28],"Imo":[7.07,5.48],"Jigawa":[9.55,12.18],
+  "Kaduna":[7.72,10.52],"Kano":[8.52,12.00],"Katsina":[7.61,12.98],
+  "Kebbi":[4.20,11.50],"Kogi":[6.74,7.80],"Kwara":[4.55,8.50],
+  "Lagos":[3.38,6.58],"Nasarawa":[8.49,8.50],"Niger":[5.58,9.93],
+  "Ogun":[3.35,7.00],"Ondo":[5.19,7.10],"Osun":[4.48,7.56],
+  "Oyo":[3.93,8.16],"Plateau":[8.89,9.22],"Rivers":[7.01,4.85],
+  "Sokoto":[5.25,13.07],"Taraba":[11.44,7.87],"Yobe":[11.83,12.29],
+  "Zamfara":[6.24,12.12],
+};
+
 /* ── Main ─────────────────────────────────────────────────────────────────── */
 const ProjectMap = () => {
   const mapContainer = useRef(null);
@@ -162,6 +231,14 @@ const ProjectMap = () => {
   const [isHeatmap,    setIsHeatmap]    = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isExporting,  setIsExporting]  = useState(false);
+
+  // Intelligence mode
+  const [mapMode,        setMapMode]        = useState('operations'); // 'operations' | 'intelligence'
+  const [intelLayer,     setIntelLayer]     = useState('solar');      // 'solar' | 'access' | 'population' | 'opportunity'
+  const [showGridLines,  setShowGridLines]  = useState(true);
+  const [showPopCircles, setShowPopCircles] = useState(false);
+  const [intelState,     setIntelState]     = useState(null);
+
 
   /* ── Recalculate choropleth live from filtered source features ── */
   const recalcChoropleth = useCallback((years, statuses, types, stateName) => {
@@ -288,7 +365,91 @@ const ProjectMap = () => {
       paint: { 'line-color': ACCENT_GOLD, 'line-width': 2.5, 'line-opacity': 1 },
       filter: ['==', 'shapeName', ''],
     });
-    
+    // ── Intelligence: Grid lines ──
+    map.current.addSource('grid-lines', {
+      type: 'geojson',
+      data: require('../data/nigeria-grid-lines.geojson'),
+    });
+    map.current.addLayer({
+      id: 'grid-330kv', type: 'line', source: 'grid-lines',
+      layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
+      filter: ['==', ['get', 'voltage_kv'], 330],
+      paint: {
+        'line-color': '#FFB800',
+        'line-width': ['interpolate',['linear'],['zoom'], 4,1.5, 8,3.0],
+        'line-opacity': 0.9,
+      },
+    });
+    map.current.addLayer({
+      id: 'grid-132kv', type: 'line', source: 'grid-lines',
+      layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
+      filter: ['==', ['get', 'voltage_kv'], 132],
+      paint: {
+        'line-color': '#60A5FA',
+        'line-width': ['interpolate',['linear'],['zoom'], 4,0.8, 8,1.8],
+        'line-opacity': 0.75,
+        'line-dasharray': [3, 2],
+      },
+    });
+
+    // ── Intelligence: Population circles ──
+    map.current.addSource('state-centroids', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: Object.entries(STATE_INTEL).map(([name, d]) => ({
+          type: 'Feature',
+          properties: { name, population: d.population, rural_pct: d.rural_pct, access_pct: d.access_pct },
+          geometry: { type: 'Point', coordinates: STATE_CENTROIDS[name] || [8.0, 9.0] },
+        })),
+      },
+    });
+    map.current.addLayer({
+      id: 'pop-circles', type: 'circle', source: 'state-centroids',
+      layout: { visibility: 'none' },
+      paint: {
+        'circle-radius': ['interpolate',['linear'],['get','population'], 1,8, 5,18, 10,28, 16,38],
+        'circle-color': '#A855F7',
+        'circle-opacity': 0.55,
+        'circle-stroke-color': '#fff',
+        'circle-stroke-width': 1.5,
+        'circle-stroke-opacity': 0.8,
+      },
+    });
+
+    // ── Intelligence: Irradiance choropleth ──
+    map.current.addLayer({
+      id: 'intel-choropleth', type: 'fill', source: 'states',
+      layout: { visibility: 'none' },
+      paint: {
+        'fill-color': [
+          'match', ['get', 'shapeName'],
+          ...Object.entries(STATE_INTEL).flatMap(([name, d]) => {
+            const ghiColor = d.ghi < 4.5 ? '#FEF9C3'
+              : d.ghi < 5.0 ? '#FDE68A'
+              : d.ghi < 5.5 ? '#FBBF24'
+              : d.ghi < 6.0 ? '#F59E0B'
+              : d.ghi < 6.2 ? '#D97706'
+              : '#B45309';
+            return [name, ghiColor];
+          }),
+          '#E5E7EB',
+        ],
+        'fill-opacity': 0.82,
+      },
+    });
+    map.current.addLayer({
+      id: 'intel-border', type: 'line', source: 'states',
+      layout: { visibility: 'none' },
+      paint: { 'line-color': 'rgba(180,140,0,0.4)', 'line-width': 0.8 },
+    });
+    map.current.addLayer({
+      id: 'intel-hover', type: 'fill', source: 'states',
+      layout: { visibility: 'none' },
+      paint: { 'fill-color': '#fff', 'fill-opacity': 0.18 },
+      filter: ['==','shapeName',''],
+    });
+
     // ── Heatmap layer ──
     map.current.addLayer({
       id: 'project-heatmap', type: 'heatmap', source: 'projects',
@@ -475,6 +636,151 @@ const ProjectMap = () => {
       isDark,
     });
   }, [stateData, isDark]);
+
+  /* ── Intelligence mode: switch layer ── */
+  const switchIntelLayer = useCallback((layer) => {
+    if (!map.current || !mapReady) return;
+    setIntelLayer(layer);
+    if (!map.current.getLayer('intel-choropleth')) return;
+
+    // Build fill-color expression based on selected layer
+    let fillExpr;
+    if (layer === 'solar') {
+      fillExpr = [
+        'match', ['get','shapeName'],
+        ...Object.entries(STATE_INTEL).flatMap(([name, d]) => {
+          const c = d.ghi < 4.5 ? '#FEF9C3' : d.ghi < 5.0 ? '#FDE68A'
+            : d.ghi < 5.5 ? '#FBBF24' : d.ghi < 6.0 ? '#F59E0B'
+            : d.ghi < 6.2 ? '#D97706' : '#B45309';
+          return [name, c];
+        }),
+        '#E5E7EB',
+      ];
+    } else if (layer === 'access') {
+      fillExpr = [
+        'match', ['get','shapeName'],
+        ...Object.entries(STATE_INTEL).flatMap(([name, d]) => {
+          const c = d.access_pct >= 80 ? '#166534' : d.access_pct >= 65 ? '#16A34A'
+            : d.access_pct >= 50 ? '#4ADE80' : d.access_pct >= 35 ? '#FCA5A5'
+            : d.access_pct >= 20 ? '#EF4444' : '#7F1D1D';
+          return [name, c];
+        }),
+        '#E5E7EB',
+      ];
+    } else if (layer === 'population') {
+      fillExpr = [
+        'match', ['get','shapeName'],
+        ...Object.entries(STATE_INTEL).flatMap(([name, d]) => {
+          const c = d.population >= 12 ? '#1E3A5F' : d.population >= 8 ? '#1D4ED8'
+            : d.population >= 5 ? '#3B82F6' : d.population >= 3 ? '#93C5FD'
+            : '#DBEAFE';
+          return [name, c];
+        }),
+        '#E5E7EB',
+      ];
+    } else if (layer === 'opportunity') {
+      fillExpr = [
+        'match', ['get','shapeName'],
+        ...Object.entries(STATE_INTEL).flatMap(([name, d]) => {
+          const c = d.opportunity_score >= 80 ? '#7F1D1D' : d.opportunity_score >= 60 ? '#DC2626'
+            : d.opportunity_score >= 40 ? '#F97316' : d.opportunity_score >= 20 ? '#FCD34D'
+            : '#D1FAE5';
+          return [name, c];
+        }),
+        '#E5E7EB',
+      ];
+    }
+    if (fillExpr) map.current.setPaintProperty('intel-choropleth', 'fill-color', fillExpr);
+  }, [mapReady]);
+
+  /* ── Intelligence mode: toggle grid lines ── */
+  const toggleGridLines = useCallback((show) => {
+    if (!map.current) return;
+    setShowGridLines(show);
+    ['grid-330kv','grid-132kv'].forEach(l => {
+      if (map.current.getLayer(l))
+        map.current.setLayoutProperty(l, 'visibility', show ? 'visible' : 'none');
+    });
+  }, []);
+
+  /* ── Intelligence mode: toggle population circles ── */
+  const togglePopCircles = useCallback((show) => {
+    if (!map.current) return;
+    setShowPopCircles(show);
+    if (map.current.getLayer('pop-circles'))
+      map.current.setLayoutProperty('pop-circles', 'visibility', show ? 'visible' : 'none');
+  }, []);
+
+  /* ── Switch between Operations and Intelligence modes ── */
+  const switchMapMode = useCallback((mode) => {
+    if (!map.current || !mapReady) return;
+    setMapMode(mode);
+    setIntelState(null);
+
+    const intelLayers = ['intel-choropleth','intel-border','intel-hover','grid-330kv','grid-132kv','pop-circles'];
+    const opsLayers   = ['state-choropleth','state-fill','state-hover','state-border','state-border-active','project-points','project-heatmap'];
+
+    if (mode === 'intelligence') {
+      // Hide ops layers
+      opsLayers.forEach(l => {
+        if (!map.current.getLayer(l)) return;
+        if (['project-points','project-heatmap'].includes(l))
+          map.current.setPaintProperty(l, 'circle-opacity', 0);
+        else
+          map.current.setLayoutProperty(l, 'visibility', 'none');
+      });
+      // Show intel layers
+      ['intel-choropleth','intel-border','intel-hover'].forEach(l => {
+        if (map.current.getLayer(l)) map.current.setLayoutProperty(l, 'visibility', 'visible');
+      });
+      if (showGridLines) ['grid-330kv','grid-132kv'].forEach(l => {
+        if (map.current.getLayer(l)) map.current.setLayoutProperty(l, 'visibility', 'visible');
+      });
+      if (showPopCircles && map.current.getLayer('pop-circles'))
+        map.current.setLayoutProperty('pop-circles', 'visibility', 'visible');
+      // Trigger layer paint for current intel layer
+      setTimeout(() => switchIntelLayer(intelLayer), 100);
+
+      // Add intel hover + click handlers if not yet added
+      if (!map.current._intelHandlersAdded) {
+        map.current.on('mousemove', 'intel-choropleth', (e) => {
+          map.current.setFilter('intel-hover', ['==','shapeName', e.features[0].properties.shapeName]);
+          map.current.getCanvas().style.cursor = 'pointer';
+        });
+        map.current.on('mouseleave', 'intel-choropleth', () => {
+          map.current.setFilter('intel-hover', ['==','shapeName','']);
+          map.current.getCanvas().style.cursor = '';
+        });
+        map.current.on('click', 'intel-choropleth', (e) => {
+          const name = e.features[0].properties.shapeName;
+          setIntelState(name);
+        });
+        map.current._intelHandlersAdded = true;
+      }
+    } else {
+      // Back to operations
+      intelLayers.forEach(l => {
+        if (map.current.getLayer(l)) map.current.setLayoutProperty(l, 'visibility', 'none');
+      });
+      // Restore ops layers
+      ['state-fill','state-border','state-border-active'].forEach(l => {
+        if (map.current.getLayer(l)) map.current.setLayoutProperty(l, 'visibility', 'visible');
+      });
+      // Restore current view
+      setView(v => {
+        const isCov = v === 'coverage';
+        if (map.current.getLayer('state-choropleth'))
+          map.current.setLayoutProperty('state-choropleth', 'visibility', isCov ? 'visible' : 'none');
+        if (map.current.getLayer('project-points')) {
+          map.current.setPaintProperty('project-points', 'circle-opacity',
+            isCov ? 0 : ['interpolate',['linear'],['zoom'],4,0.45,6,0.68,9,0.88]);
+          map.current.setPaintProperty('project-points', 'circle-stroke-opacity', isCov ? 0 : 1);
+        }
+        return v;
+      });
+    }
+  }, [mapReady, showGridLines, showPopCircles, intelLayer, switchIntelLayer]);
+
 
   /* ── Escape key to deselect ── */
   useEffect(() => {
@@ -679,6 +985,52 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
     return null;
   };
 
+  /* ── Intelligence Legend ── */
+  const renderIntelLegend = () => {
+    if (intelLayer === 'solar') return (
+      <>
+        {[['#B45309','6.2+ kWh/m²/d'],['#D97706','6.0–6.2'],['#F59E0B','5.5–6.0'],['#FBBF24','5.0–5.5'],['#FDE68A','4.5–5.0'],['#FEF9C3','< 4.5']].map(([c,l]) => (
+          <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:5 }}>
+            <span style={{ width:12, height:12, borderRadius:3, background:c, display:'inline-block', flexShrink:0 }} />
+            <span style={{ fontSize:11, color:theme.textPrimary, fontFamily:"'Barlow',sans-serif" }}>{l}</span>
+          </div>
+        ))}
+      </>
+    );
+    if (intelLayer === 'access') return (
+      <>
+        {[['#166534','80%+'],['#16A34A','65–80%'],['#4ADE80','50–65%'],['#FCA5A5','35–50%'],['#EF4444','20–35%'],['#7F1D1D','< 20%']].map(([c,l]) => (
+          <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:5 }}>
+            <span style={{ width:12, height:12, borderRadius:3, background:c, display:'inline-block', flexShrink:0 }} />
+            <span style={{ fontSize:11, color:theme.textPrimary, fontFamily:"'Barlow',sans-serif" }}>{l}</span>
+          </div>
+        ))}
+      </>
+    );
+    if (intelLayer === 'population') return (
+      <>
+        {[['#1E3A5F','12M+'],['#1D4ED8','8–12M'],['#3B82F6','5–8M'],['#93C5FD','3–5M'],['#DBEAFE','< 3M']].map(([c,l]) => (
+          <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:5 }}>
+            <span style={{ width:12, height:12, borderRadius:3, background:c, display:'inline-block', flexShrink:0 }} />
+            <span style={{ fontSize:11, color:theme.textPrimary, fontFamily:"'Barlow',sans-serif" }}>{l}</span>
+          </div>
+        ))}
+      </>
+    );
+    if (intelLayer === 'opportunity') return (
+      <>
+        {[['#7F1D1D','Score 80+'],['#DC2626','60–80'],['#F97316','40–60'],['#FCD34D','20–40'],['#D1FAE5','0–20']].map(([c,l]) => (
+          <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:5 }}>
+            <span style={{ width:12, height:12, borderRadius:3, background:c, display:'inline-block', flexShrink:0 }} />
+            <span style={{ fontSize:11, color:theme.textPrimary, fontFamily:"'Barlow',sans-serif" }}>{l}</span>
+          </div>
+        ))}
+      </>
+    );
+    return null;
+  };
+
+
   /* ── Legend ── */
   const renderLegend = () => {
     const entries = view === 'coverage'
@@ -696,6 +1048,79 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
         <span style={{ fontSize: 11, color: theme.textPrimary, fontFamily: "'Barlow', sans-serif" }}>{label}</span>
       </div>
     ));
+  };
+
+  /* ── Intelligence side panel content ── */
+  const renderIntelPanel = () => {
+    const d = intelState ? getIntel(intelState) : null;
+
+    // Ranked list of top opportunity states
+    const ranked = Object.entries(STATE_INTEL)
+      .sort((a,b) => b[1].opportunity_score - a[1].opportunity_score)
+      .slice(0, 7);
+
+    if (!d) return (
+      <div>
+        <div style={{ fontSize:11, color:theme.textMuted, marginBottom:14, fontFamily:"'Barlow',sans-serif" }}>
+          Click any state to see its energy profile
+        </div>
+        <div style={{ fontSize:10, fontWeight:800, color:theme.textMuted, letterSpacing:1.5, marginBottom:10, textTransform:'uppercase', fontFamily:"'Barlow Condensed',sans-serif" }}>
+          Top Opportunity States
+        </div>
+        {ranked.map(([sName, sd], i) => (
+          <div key={sName} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+            <span style={{ fontSize:11, fontWeight:800, color: i===0?ACCENT_GOLD:i<3?REA_GREEN:theme.textMuted, fontFamily:"'Barlow Condensed',sans-serif", minWidth:16 }}>{i+1}</span>
+            <div style={{ flex:1 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:2 }}>
+                <span style={{ fontSize:11, color:theme.textPrimary, fontFamily:"'Barlow',sans-serif" }}>{sName === 'Federal Capital Territory' ? 'FCT' : sName}</span>
+                <span style={{ fontSize:10, fontWeight:700, color:ACCENT_GOLD, fontFamily:"'Barlow Condensed',sans-serif" }}>{sd.opportunity_score}</span>
+              </div>
+              <div style={{ height:3, borderRadius:2, background:theme.divider, overflow:'hidden' }}>
+                <div style={{ height:'100%', width:`${sd.opportunity_score}%`, background:`linear-gradient(90deg,${REA_GREEN},${ACCENT_GOLD})`, borderRadius:2 }} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+
+    return (
+      <div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:14 }}>
+          {[
+            { label:'Solar GHI',  value:`${d.ghi} kWh/m²/d`, color:'#F59E0B' },
+            { label:'Grid Access',value:`${d.access_pct}%`,   color:d.access_pct>=60?'#16A34A':'#EF4444' },
+            { label:'Population', value:`${d.population}M`,   color:'#A855F7' },
+            { label:'Rural Pop',  value:`${d.rural_pct}%`,    color:'#60A5FA' },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{ borderRadius:10, padding:'10px 8px', textAlign:'center', background:`${color}18`, border:`1px solid ${color}30`, position:'relative', overflow:'hidden' }}>
+              <div style={{ position:'absolute', top:0, left:0, right:0, height:2.5, background:color, borderRadius:'10px 10px 0 0' }} />
+              <div style={{ fontSize:18, fontWeight:800, color, fontFamily:"'Barlow Condensed',sans-serif", lineHeight:1.1 }}>{value}</div>
+              <div style={{ fontSize:9, color:theme.textMuted, marginTop:3, textTransform:'uppercase', letterSpacing:0.5, fontFamily:"'Barlow',sans-serif" }}>{label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+            <span style={{ fontSize:10, fontWeight:700, color:theme.textMuted, textTransform:'uppercase', letterSpacing:1, fontFamily:"'Barlow Condensed',sans-serif" }}>Without Electricity</span>
+            <span style={{ fontSize:11, fontWeight:800, color:'#EF4444', fontFamily:"'Barlow Condensed',sans-serif" }}>{d.unelectrified_pop}M people</span>
+          </div>
+          <div style={{ height:5, borderRadius:3, background:theme.divider, overflow:'hidden' }}>
+            <div style={{ height:'100%', width:`${100-d.access_pct}%`, background:'linear-gradient(90deg,#EF4444,#F97316)', borderRadius:3 }} />
+          </div>
+        </div>
+        <div style={{ borderRadius:10, padding:'10px 12px', background:`${ACCENT_GOLD}15`, border:`1px solid ${ACCENT_GOLD}40`, display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+          <div>
+            <div style={{ fontSize:9, fontWeight:700, color:ACCENT_GOLD, textTransform:'uppercase', letterSpacing:1, fontFamily:"'Barlow Condensed',sans-serif" }}>Opportunity Score</div>
+            <div style={{ fontSize:10, color:theme.textMuted, fontFamily:"'Barlow',sans-serif" }}>Solar + Need + Rural</div>
+          </div>
+          <div style={{ fontSize:32, fontWeight:800, color:ACCENT_GOLD, fontFamily:"'Barlow Condensed',sans-serif", lineHeight:1 }}>{d.opportunity_score}</div>
+        </div>
+        <div style={{ fontSize:10, color:theme.textMuted, fontFamily:"'Barlow',sans-serif", lineHeight:1.6 }}>
+          {d.rural_pct}% rural pop · {d.opportunity_score >= 70 ? '🔴 High priority' : d.opportunity_score >= 40 ? '🟡 Medium' : '🟢 Lower priority'}
+        </div>
+      </div>
+    );
   };
 
   const showSide = activeState && stateData && view !== 'performance';
@@ -922,17 +1347,90 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
           </div>
         )}
 
+        {/* ── Intelligence Layer Controls ── */}
+        {mapMode === 'intelligence' && (
+          <div style={{
+            ...glass({ borderRadius:14, padding:'14px 16px', animation:'fadeUp 0.2s ease' }),
+            position:'absolute', top:108, left:16, width:200, zIndex:20,
+          }}>
+            <div style={{ fontSize:10, fontWeight:800, color:'#60A5FA', letterSpacing:1.5, textTransform:'uppercase', marginBottom:12, fontFamily:"'Barlow Condensed',sans-serif" }}>Layer Controls</div>
+
+            {/* Grid lines toggle */}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+              <span style={{ fontSize:11, color:theme.textPrimary, fontFamily:"'Barlow',sans-serif" }}>Grid Lines</span>
+              <button onClick={() => toggleGridLines(!showGridLines)} style={{
+                width:36, height:20, borderRadius:10, border:'none', cursor:'pointer', position:'relative', transition:'all 0.2s',
+                background: showGridLines ? '#F59E0B' : theme.chipBorder,
+              }}>
+                <span style={{ position:'absolute', top:2, left: showGridLines?18:2, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'all 0.2s', display:'block' }} />
+              </button>
+            </div>
+            <div style={{ display:'flex', gap:12, marginBottom:14, paddingLeft:4 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                <div style={{ width:18, height:3, background:'#FFB800', borderRadius:2 }} />
+                <span style={{ fontSize:9, color:theme.textMuted, fontFamily:"'Barlow',sans-serif" }}>330kV</span>
+              </div>
+              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                <div style={{ width:18, height:2, background:'#60A5FA', borderRadius:2, borderTop:'2px dashed #60A5FA' }} />
+                <span style={{ fontSize:9, color:theme.textMuted, fontFamily:"'Barlow',sans-serif" }}>132kV</span>
+              </div>
+            </div>
+
+            {/* Population circles toggle */}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+              <span style={{ fontSize:11, color:theme.textPrimary, fontFamily:"'Barlow',sans-serif" }}>Population Circles</span>
+              <button onClick={() => togglePopCircles(!showPopCircles)} style={{
+                width:36, height:20, borderRadius:10, border:'none', cursor:'pointer', position:'relative', transition:'all 0.2s',
+                background: showPopCircles ? '#A855F7' : theme.chipBorder,
+              }}>
+                <span style={{ position:'absolute', top:2, left: showPopCircles?18:2, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'all 0.2s', display:'block' }} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Intelligence Side Panel ── */}
+        {mapMode === 'intelligence' && (
+          <div style={{
+            ...glass({ borderRadius:16, padding:'20px 18px', animation:'slideIn 0.3s ease' }),
+            position:'absolute', top:'50%', right:16, transform:'translateY(-50%)', width:280, zIndex:20,
+          }}>
+            <div style={{ marginBottom:14 }}>
+              <div style={{ fontSize:9, fontWeight:700, color:'#60A5FA', letterSpacing:2, textTransform:'uppercase', fontFamily:"'Barlow Condensed',sans-serif", marginBottom:2 }}>
+                🛰 Energy Intelligence
+              </div>
+              <div style={{ fontSize:16, fontWeight:800, color:theme.textPrimary, fontFamily:"'Barlow Condensed',sans-serif", lineHeight:1.2 }}>
+                {intelState
+                  ? (intelState === 'Federal Capital Territory' ? 'FCT – Abuja' : intelState)
+                  : 'Nigeria Overview'
+                }
+              </div>
+              {intelState && (
+                <button onClick={() => setIntelState(null)} style={{ position:'absolute', top:20, right:18, background:'none', border:`1px solid ${theme.chipBorder}`, borderRadius:6, cursor:'pointer', color:theme.textMuted, fontSize:12, padding:'3px 7px' }}>✕</button>
+              )}
+              <div style={{ marginTop:8, height:2, borderRadius:2, background:'linear-gradient(90deg, #1D4ED8, transparent)' }} />
+            </div>
+            {renderIntelPanel()}
+          </div>
+        )}
+
         {/* ── Legend ── */}
         <div style={{
           ...glass({ borderRadius:12, padding:'12px 16px', minWidth:160 }),
           position:'absolute', bottom:30, right:16, zIndex:20,
         }}>
           <div style={{ fontSize:10, fontWeight:800, color:theme.textSecond, letterSpacing:1.5, textTransform:'uppercase', marginBottom:10, fontFamily:"'Barlow Condensed', sans-serif" }}>
-            {view === 'coverage' ? 'Project Density' : view === 'performance' ? 'Project Status' : 'Technology Type'}
+            {mapMode === 'intelligence'
+            ? intelLayer === 'solar' ? 'Solar Irradiance (GHI)'
+            : intelLayer === 'access' ? 'Electricity Access Rate'
+            : intelLayer === 'population' ? 'State Population'
+            : 'Opportunity Score'
+            : view === 'coverage' ? 'Project Density'
+            : view === 'performance' ? 'Project Status' : 'Technology Type'}
           </div>
-          {renderLegend()}
+          {mapMode === 'intelligence' ? renderIntelLegend() : renderLegend()}
         </div>
-
+          
       </div>
     </>
   );
