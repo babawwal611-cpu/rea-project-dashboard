@@ -1,0 +1,863 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kainji\u2013Jebba",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.6365,
+            9.8603
+          ],
+          [
+            4.8231,
+            9.1167
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jebba\u2013Shiroro",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.8231,
+            9.1167
+          ],
+          [
+            6.8333,
+            9.9833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shiroro\u2013Kaduna",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            6.8333,
+            9.9833
+          ],
+          [
+            7.4339,
+            10.5264
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kaduna\u2013Kano",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.4339,
+            10.5264
+          ],
+          [
+            8.5167,
+            12.0
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jebba\u2013Oshogbo",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.8231,
+            9.1167
+          ],
+          [
+            4.4833,
+            7.7833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Oshogbo\u2013Akangba",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.4833,
+            7.7833
+          ],
+          [
+            3.3792,
+            6.6018
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Akangba\u2013Ikeja West",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            3.3792,
+            6.6018
+          ],
+          [
+            3.335,
+            6.5833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Oshogbo\u2013Benin",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.4833,
+            7.7833
+          ],
+          [
+            5.6037,
+            6.335
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Benin\u2013Sapele",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.6037,
+            6.335
+          ],
+          [
+            5.6833,
+            5.8833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Benin\u2013Onitsha",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.6037,
+            6.335
+          ],
+          [
+            6.7833,
+            6.1667
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Onitsha\u2013Enugu",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            6.7833,
+            6.1667
+          ],
+          [
+            7.4833,
+            6.45
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Enugu\u2013Alaoji",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.4833,
+            6.45
+          ],
+          [
+            7.3667,
+            5.1167
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Alaoji\u2013Afam",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.3667,
+            5.1167
+          ],
+          [
+            7.05,
+            4.9
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Benin\u2013Ajaokuta",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.6037,
+            6.335
+          ],
+          [
+            6.6667,
+            7.55
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ajaokuta\u2013Abuja",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            6.6667,
+            7.55
+          ],
+          [
+            7.4898,
+            9.0579
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Abuja\u2013Kaduna",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.4898,
+            9.0579
+          ],
+          [
+            7.4339,
+            10.5264
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Egbin\u2013Ikeja",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            3.7167,
+            6.55
+          ],
+          [
+            3.335,
+            6.5833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sapele\u2013Aladja",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.6833,
+            5.8833
+          ],
+          [
+            5.75,
+            5.55
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kano\u2013Gombe",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.5167,
+            12.0
+          ],
+          [
+            11.1667,
+            10.2833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gombe\u2013Maiduguri",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1667,
+            10.2833
+          ],
+          [
+            13.1567,
+            11.8333
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kaduna\u2013Jos",
+        "voltage_kv": 330,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.4339,
+            10.5264
+          ],
+          [
+            8.8921,
+            9.8965
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jos\u2013Gombe",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.8921,
+            9.8965
+          ],
+          [
+            11.1667,
+            10.2833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ikeja\u2013Ota",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            3.335,
+            6.5833
+          ],
+          [
+            3.2333,
+            6.6833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Abuja\u2013Lafia",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.4898,
+            9.0579
+          ],
+          [
+            8.4833,
+            8.4833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lafia\u2013Makurdi",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.4833,
+            8.4833
+          ],
+          [
+            8.5333,
+            7.7333
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Makurdi\u2013Gboko",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.5333,
+            7.7333
+          ],
+          [
+            9.0,
+            7.3167
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sokoto\u2013Birnin Kebbi",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.2333,
+            13.0667
+          ],
+          [
+            4.1997,
+            12.45
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kano\u2013Dutse",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.5167,
+            12.0
+          ],
+          [
+            9.3333,
+            11.75
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Calabar\u2013Itu",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            8.3333,
+            4.95
+          ],
+          [
+            7.9833,
+            5.2
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Oshogbo\u2013Ilorin",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.4833,
+            7.7833
+          ],
+          [
+            4.55,
+            8.5
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Ilorin\u2013Jebba",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            4.55,
+            8.5
+          ],
+          [
+            4.8231,
+            9.1167
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Warri\u2013Sapele",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            5.75,
+            5.5167
+          ],
+          [
+            5.6833,
+            5.8833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Port Harcourt\u2013Alaoji",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.05,
+            4.7667
+          ],
+          [
+            7.3667,
+            5.1167
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Katsina\u2013Kano",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.6,
+            12.9833
+          ],
+          [
+            8.5167,
+            12.0
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Yola\u2013Gombe",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            12.4833,
+            9.2333
+          ],
+          [
+            11.1667,
+            10.2833
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Maiduguri\u2013Damaturu",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            13.1567,
+            11.8333
+          ],
+          [
+            11.9667,
+            11.75
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Zaria\u2013Kano",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.7,
+            11.0833
+          ],
+          [
+            8.5167,
+            12.0
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shiroro\u2013Minna",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            6.8333,
+            9.9833
+          ],
+          [
+            6.55,
+            9.6167
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Abuja\u2013Gwagwalada",
+        "voltage_kv": 132,
+        "type": "transmission",
+        "operator": "TCN"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            7.4898,
+            9.0579
+          ],
+          [
+            7.0833,
+            8.95
+          ]
+        ]
+      }
+    }
+  ]
+}
