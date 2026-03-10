@@ -1156,24 +1156,66 @@ map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
   style={{ width: 60, height: 60, objectFit: 'contain' }}
 />
         </div>
-        {/* ── View Selector ── */}
-        <div style={{ position:'absolute', top:16, left:'50%', transform:'translateX(-50%)', zIndex:20, display:'flex', gap:6 }}>
-          {VIEWS.map(v => (
-            <button key={v.id} onClick={() => switchView(v.id)} style={{
-              padding:'8px 18px', borderRadius:8, cursor:'pointer',
-              fontFamily:"'Barlow Condensed', sans-serif", fontWeight:700, fontSize:12, letterSpacing:1, textTransform:'uppercase',
-              background: view === v.id ? `linear-gradient(135deg, ${REA_GREEN}, ${REA_DARK})` : theme.glassBg,
-              color: view === v.id ? '#fff' : theme.chipText,
-              backdropFilter: theme.glassBlur, WebkitBackdropFilter: theme.glassBlur,
-              boxShadow: view === v.id ? `0 4px 16px ${REA_GREEN}55` : '0 2px 8px rgba(0,0,0,0.15)',
-              border: view === v.id ? 'none' : theme.panelBorder,
-              transition:'all 0.2s ease', display:'flex', alignItems:'center', gap:6,
-            }}>
-              <span style={{ fontSize:10 }}>{v.icon}</span>{v.label}
-            </button>
-          ))}
-        </div>
+        {/* ── Mode Toggle + View Selector ── */}
+        <div style={{ position:'absolute', top:16, left:'50%', transform:'translateX(-50%)', zIndex:20, display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
 
+          {/* Mode toggle pill */}
+          <div style={{ ...glass({ borderRadius:10, padding:'3px' }), display:'flex', gap:2 }}>
+            {[
+              { id:'operations',   label:'OPERATIONS',  icon:'⚡' },
+              { id:'intelligence', label:'INTELLIGENCE', icon:'🛰' },
+            ].map(m => (
+              <button key={m.id} onClick={() => switchMapMode(m.id)} style={{
+                padding:'6px 16px', borderRadius:8, cursor:'pointer',
+                fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:11, letterSpacing:0.8, textTransform:'uppercase',
+                background: mapMode === m.id ? `linear-gradient(135deg, ${mapMode==='intelligence'?'#1D4ED8':'#005C2B'}, ${mapMode==='intelligence'?'#3B82F6':REA_GREEN})` : 'transparent',
+                color: mapMode === m.id ? '#fff' : theme.chipText,
+                border:'none', transition:'all 0.2s ease', display:'flex', alignItems:'center', gap:5,
+              }}>
+                <span>{m.icon}</span>{m.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Sub-view buttons */}
+          <div style={{ display:'flex', gap:6 }}>
+            {mapMode === 'operations'
+              ? VIEWS.map(v => (
+                  <button key={v.id} onClick={() => switchView(v.id)} style={{
+                    padding:'7px 16px', borderRadius:8, cursor:'pointer',
+                    fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:11, letterSpacing:1, textTransform:'uppercase',
+                    background: view === v.id ? `linear-gradient(135deg, ${REA_GREEN}, ${REA_DARK})` : theme.glassBg,
+                    color: view === v.id ? '#fff' : theme.chipText,
+                    backdropFilter: theme.glassBlur, WebkitBackdropFilter: theme.glassBlur,
+                    boxShadow: view === v.id ? `0 4px 16px ${REA_GREEN}55` : '0 2px 8px rgba(0,0,0,0.15)',
+                    border: view === v.id ? 'none' : theme.panelBorder,
+                    transition:'all 0.2s ease', display:'flex', alignItems:'center', gap:5,
+                  }}>
+                    <span style={{ fontSize:10 }}>{v.icon}</span>{v.label}
+                  </button>
+                ))
+              : [
+                  { id:'solar',       label:'SOLAR GHI',   icon:'☀' },
+                  { id:'access',      label:'GRID ACCESS',  icon:'⚡' },
+                  { id:'population',  label:'POPULATION',  icon:'👥' },
+                  { id:'opportunity', label:'OPPORTUNITY',  icon:'🎯' },
+                ].map(v => (
+                  <button key={v.id} onClick={() => switchIntelLayer(v.id)} style={{
+                    padding:'7px 14px', borderRadius:8, cursor:'pointer',
+                    fontFamily:"'Barlow Condensed',sans-serif", fontWeight:700, fontSize:11, letterSpacing:0.8, textTransform:'uppercase',
+                    background: intelLayer === v.id ? `linear-gradient(135deg, #1D4ED8, #3B82F6)` : theme.glassBg,
+                    color: intelLayer === v.id ? '#fff' : theme.chipText,
+                    backdropFilter: theme.glassBlur, WebkitBackdropFilter: theme.glassBlur,
+                    boxShadow: intelLayer === v.id ? '0 4px 16px #1D4ED855' : '0 2px 8px rgba(0,0,0,0.15)',
+                    border: intelLayer === v.id ? 'none' : theme.panelBorder,
+                    transition:'all 0.2s ease', display:'flex', alignItems:'center', gap:5,
+                  }}>
+                    <span style={{ fontSize:10 }}>{v.icon}</span>{v.label}
+                  </button>
+                ))
+            }
+          </div>
+        </div>
         {/* ── Top-left controls ── */}
         <div style={{ position:'absolute', top:16, left:16, zIndex:20, display:'flex', flexDirection:'column', gap:8 }}>
           {/* Filter toggle */}
