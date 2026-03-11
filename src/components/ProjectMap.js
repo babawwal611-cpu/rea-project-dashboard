@@ -348,6 +348,7 @@ const ProjectMap = () => {
       // In coverage view keep layer loaded (for querySourceFeatures) but invisible
       map.current.setPaintProperty('project-points', 'circle-opacity',        isCov ? 0 : ['interpolate',['linear'],['zoom'],4,0.45,6,0.68,9,0.88]);
       map.current.setPaintProperty('project-points', 'circle-stroke-opacity', isCov ? 0 : 1);
+      map.current.setLayoutProperty('project-points', 'visibility', isCov ? 'none' : 'visible');
     }
     if (map.current.getLayer('state-choropleth'))
       map.current.setLayoutProperty('state-choropleth', 'visibility', isCov ? 'visible' : 'none');
@@ -426,9 +427,16 @@ const ProjectMap = () => {
         map.current.setLayoutProperty('project-heatmap', 'visibility', next ? 'visible' : 'none');
       // In heatmap mode hide individual points
       if (map.current.getLayer('project-points')) {
-        map.current.setPaintProperty('project-points', 'circle-opacity',
-          next ? 0 : ['interpolate',['linear'],['zoom'],4,0.45,6,0.68,9,0.88]);
-        map.current.setPaintProperty('project-points', 'circle-stroke-opacity', next ? 0 : 1);
+        setView(v => {
+          const inCoverage = v === 'coverage';
+          map.current.setPaintProperty('project-points', 'circle-opacity',
+            (next || inCoverage) ? 0 : ['interpolate',['linear'],['zoom'],4,0.45,6,0.68,9,0.88]);
+          map.current.setPaintProperty('project-points', 'circle-stroke-opacity',
+            (next || inCoverage) ? 0 : 1);
+          map.current.setLayoutProperty('project-points', 'visibility',
+            (next || inCoverage) ? 'none' : 'visible');
+          return v;
+        });
       }
       return next;
     });
@@ -529,9 +537,10 @@ const ProjectMap = () => {
     map.current.on('load', () => {
       addLayers(THEMES.dark.pointStroke);
       map.current.setLayoutProperty('state-choropleth', 'visibility', 'visible');
-  map.current.setPaintProperty('project-points', 'circle-opacity', 0);
-map.current.setPaintProperty('project-points', 'circle-stroke-opacity', 0);
-map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
+    map.current.setPaintProperty('project-points', 'circle-opacity', 0);
+    map.current.setPaintProperty('project-points', 'circle-stroke-opacity', 0);
+    map.current.setLayoutProperty('project-points', 'visibility', 'none');
+    map.current.setPaintProperty('state-fill', 'fill-opacity', 0);
       setTimeout(() => {
         setPointCount(map.current.queryRenderedFeatures({ layers: ['project-points'] }).length);
         setMapReady(true);
