@@ -171,17 +171,23 @@ const generateStateReport = ({ stateData, mapCanvas, isDark, techData }) => {
     doc.line(14, y+2, W-14, y+2);
     y += 6;
 
-    try {
-  const imgData = mapCanvas.toDataURL('image/jpeg', 0.6);
-  doc.addImage(imgData, 'JPEG', x, y, width, height);
-} catch (e) {
-  // Canvas tainted or unavailable — draw a placeholder
-  doc.setFillColor(20, 60, 35);
-  doc.rect(x, y, width, height, 'F');
-  doc.setTextColor(100, 160, 100);
-  doc.setFontSize(9);
-  doc.text('Map preview unavailable', x + width / 2, y + height / 2, { align: 'center' });
-}
+   try {
+      const imgData = mapCanvas.toDataURL('image/png');
+      const mapH    = 65;
+      roundRect(doc, 14, y, W-28, mapH, 3, LIGHT_BG);
+      doc.addImage(imgData, 'PNG', 14, y, W-28, mapH);
+      // Subtle border
+      doc.setDrawColor(...REA_GREEN);
+      doc.setLineWidth(0.3);
+      roundRect(doc, 14, y, W-28, mapH, 3, null, REA_GREEN);
+      y += mapH + 6;
+    } catch(e) {
+      doc.setFont('helvetica','italic');
+      doc.setFontSize(8);
+      doc.setTextColor(...GREY_TEXT);
+      doc.text('(Map screenshot unavailable — enable preserveDrawingBuffer in Mapbox config)', 14, y+10);
+      y += 20;
+    }
   }
 
   // ── Footer ──
