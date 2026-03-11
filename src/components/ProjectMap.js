@@ -531,6 +531,7 @@ const ProjectMap = () => {
       container: mapContainer.current,
       style: THEMES.dark.mapStyle,
       center: [8.6753, 9.0820], zoom: 5.8,
+      preserveDrawingBuffer: true,
     });
     map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
 
